@@ -4,7 +4,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-import torch
+from .base import BaseModel
 
 from utils.registry_utils import import_all_modules
 
@@ -34,7 +34,7 @@ def register_model(name, bypass_checks=False):
                 raise ValueError(
                     f"Cannot register duplicate model ({name}). Already registered at \n{MODEL_REGISTRY_TB[name]}\n"
                 )
-            if not issubclass(cls, torch.nn.Module):
+            if not issubclass(cls, BaseModel):
                 raise ValueError(
                     f"Model ({name}: {cls.__name__}) must extend ClassyModel"
                 )
@@ -69,5 +69,5 @@ def get_model(config: Dict[str, Any]):
     return model
 
 
-
+# automatically import any Python files in the models/ directory
 import_all_modules(FILE_ROOT, "models")
