@@ -17,10 +17,10 @@ METHOD_REGISTRY_TB = {}
 METHOD_CLASS_NAMES_TB = {}
 
 def register_method(name, bypass_checks=False):
-    """Register a :class:`torch.nn.Module` subclass.
+    """Register a :class:`BaseMethod` subclass.
 
-    This decorator allows instantiating a subclass of :class:`torch.nn.Module`
-    from a configuration file. To use it, apply this decorator to a `torch.nn.Module`
+    This decorator allows instantiating a subclass of :class:`BaseMethod`
+    from a configuration file. To use it, apply this decorator to a `BaseMethod`
     subclass.
 
     Args:

@@ -4,7 +4,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from .base import BaseModel
+from models.base import BaseModel
 
 from utils.registry_utils import import_all_modules
 
@@ -17,10 +17,10 @@ MODEL_REGISTRY_TB = {}
 MODEL_CLASS_NAMES_TB = {}
 
 def register_model(name, bypass_checks=False):
-    """Register a :class:`torch.nn.Module` subclass.
+    """Register a :class:`BaseModel` subclass.
 
-    This decorator allows instantiating a subclass of :class:`torch.nn.Module`
-    from a configuration file. To use it, apply this decorator to a `torch.nn.Module`
+    This decorator allows instantiating a subclass of :class:`BaseModel`
+    from a configuration file. To use it, apply this decorator to a `BaseModel`
     subclass.
 
     Args:
@@ -36,7 +36,7 @@ def register_model(name, bypass_checks=False):
                 )
             if not issubclass(cls, BaseModel):
                 raise ValueError(
-                    f"Model ({name}: {cls.__name__}) must extend ClassyModel"
+                    f"Model ({name}: {cls.__name__}) must extend BaseModel"
                 )
             if cls.__name__ in MODEL_CLASS_NAMES:
                 raise ValueError(

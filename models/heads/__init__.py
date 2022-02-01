@@ -4,7 +4,7 @@ from pathlib import Path
 
 from utils.registry_utils import import_all_modules
 
-from .base import BaseHead
+from model.heads.base import BaseHead
 
 
 FILE_ROOT = Path(__file__).parent
@@ -17,18 +17,18 @@ HEAD_CLASS_NAMES_TB = {}
 
 
 def register_head(name, bypass_checks=False):
-    """Registers a ClassyHead subclass.
+    """Registers a BaseHead subclass.
 
-    This decorator allows Classy Vision to instantiate a subclass of
-    ClassyHead from a configuration file, even if the class itself is not
-    part of the Classy Vision framework. To use it, apply this decorator to a
-    ClassyHead subclass, like this:
+    This decorator allows to instantiate a subclass of BaseHead 
+    from a configuration file, even if the class itself is not
+    part of the framework. To use it, apply this decorator to a
+    BaseHead subclass, like this:
+
     .. code-block:: python
       @register_head("my_head")
-      class MyHead(ClassyHead):
+      class MyHead(BaseHead):
           ...
-    To instantiate a head from a configuration file, see
-    :func:`build_head`."""
+    """
 
     def register_head_cls(cls):
         if not bypass_checks:
@@ -38,7 +38,7 @@ def register_head(name, bypass_checks=False):
                 )
             if not issubclass(cls, BaseHead):
                 raise ValueError(
-                    f"Head ({name}: {cls.__name__}) must extend ClassyHead"
+                    f"Head ({name}: {cls.__name__}) must extend BaseHead"
                 )
             if cls.__name__ in HEAD_CLASS_NAMES:
                 raise ValueError(
