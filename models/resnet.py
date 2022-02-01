@@ -3,7 +3,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
-from .mlp import *
+from models import register_model
+from models.base import BaseModel
+
+from models.heads.mlp import *
+
 
 
 class BasicBlock(nn.Module):
@@ -69,6 +73,7 @@ class Bottleneck(nn.Module):
             return out
 
 
+@register_model("resnet")
 class ResNet(nn.Module):
     def __init__(self, block, num_blocks, nf, input_size, in_channel=3, zero_init_residual=False):
         super(ResNet, self).__init__()
@@ -180,8 +185,8 @@ feature_dims = {
 
 # ---------------------------------------------
 
-
-class SupConResNet(nn.Module):
+@register_model("supconnet")
+class SupConResNet(BaseModel):
     """backbone + projection head"""
     def __init__(self, name='resnet50', head='mlp', nf=64, input_size=(3,32,32), feat_dim=128, hidden_dim=256, batch_norm=False, num_layers=2):
         super(SupConResNet, self).__init__()
@@ -195,6 +200,17 @@ class SupConResNet(nn.Module):
         else:
             raise NotImplementedError(
                 'head not supported: {}'.format(head))
+
+    @classmethod
+    def from_config(cls, config):
+        # params = (
+        #     config.name,
+        #     config.head,
+        #     config.nf,
+        #     config.input_size, 
+        #     config.feat_dim,
+        # )
+        return cls()
 
     def return_hidden(self, x, layer=-1):
         return self.encoder.return_hidden(x, layer)

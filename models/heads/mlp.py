@@ -10,7 +10,7 @@ def normalize(x):
 
 class LinearClassifier(nn.Module):
     """Linear classifier"""
-    def __init__(self, name='resnet18', feat_dim=model_dict['resnet18'], num_classes=10):
+    def __init__(self, name='resnet18', feat_dim=256, num_classes=10):
         super(LinearClassifier, self).__init__()
         self.fc = nn.Linear(feat_dim, num_classes)
 
