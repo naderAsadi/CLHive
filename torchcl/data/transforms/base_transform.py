@@ -3,7 +3,10 @@ from typing import Any, Dict
 import torch.nn as nn
 from torchvision import transforms
 
+from data.transforms import register_transform
 
+
+@register_transform("base")
 class BaseTransform(nn.Module):
     """
     Class representing a data transform abstraction.
@@ -29,7 +32,7 @@ class BaseTransform(nn.Module):
         Args:
             input: input image data
         """
-        pass
+        return self.tfs(input)
 
     @classmethod
     def from_config(cls, config: Dict[str, Any]):

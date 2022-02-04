@@ -3,9 +3,10 @@ from typing import Any, Dict
 import torch
 from torchvision import transforms
 
-from data.transforms.base import BaseTransform
+from data.transforms import BaseTransform, register_transform
 
 
+@register_transform("simclr")
 class SimCLRTransform(BaseTransform):
 
     def __init__(self, size, mean=None, std=None):

@@ -4,9 +4,9 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from methods.base import BaseMethod
+# from torchcl.methods.base import BaseMethod
 
-from utils.registry_utils import import_all_modules
+from torchcl.utils.registry_utils import import_all_modules
 
 
 FILE_ROOT = Path(__file__).parent
@@ -70,4 +70,4 @@ def get_method(config: Dict[str, Any]):
 
 
 # automatically import any Python files in the methods/ directory
-import_all_modules(FILE_ROOT, "methods")
+import_all_modules(FILE_ROOT, "torchcl.methods")

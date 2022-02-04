@@ -2,25 +2,40 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 
+from torchcl.models.heads import register_head, BaseHead
+
 
 def normalize(x):
     x_norm = torch.norm(x, p=2, dim=1).unsqueeze(1).expand_as(x)
     x_normalized = x.div(x_norm + 0.00001)
     return x_normalized
 
-class LinearClassifier(nn.Module):
+def add_linear(dim_in: int, dim_out: int, batch_norm: bool, relu: bool):
+    layers = []
+    layers.append(nn.Linear(dim_in, dim_out))
+    if batch_norm:
+        layers.append(nn.BatchNorm1d(dim_out))
+    if relu:
+        layers.append(nn.ReLU(inplace=True))
+
+    return nn.Sequential(*layers)
+
+
+@register_head("linear")
+class LinearClassifier(BaseHead):
     """Linear classifier"""
-    def __init__(self, name='resnet18', feat_dim=256, num_classes=10):
+    def __init__(self, feature_dim, n_classes):
         super(LinearClassifier, self).__init__()
-        self.fc = nn.Linear(feat_dim, num_classes)
+        self.fc = nn.Linear(feature_dim, n_classes)
 
     def forward(self, features):
         return self.fc(features)
 
 
-class distLinear(nn.Module):
+@register_head("distlinear")
+class DistLinear(BaseHead):
     def __init__(self, indim, outdim, weight=None):
-        super(distLinear, self).__init__()
+        super(DistLinear, self).__init__()
         self.L = nn.Linear( indim, outdim, bias = False)
         if weight is not None:
             self.L.weight.data = Variable(weight)
@@ -41,47 +56,40 @@ class distLinear(nn.Module):
         return scores
 
 
-def add_linear(dim_in, dim_out, batch_norm, relu):
-    layers = []
-    layers.append(nn.Linear(dim_in, dim_out))
-    if batch_norm:
-        layers.append(nn.BatchNorm1d(dim_out))
-    if relu:
-        layers.append(nn.ReLU(inplace=True))
+@register_head("projection")
+class ProjectionMLP(BaseHead):
+    def __init__(
+        self, 
+        dim_in: int, 
+        hidden_dim: int, 
+        feature_dim: int, 
+        num_layers: int = 2,
+        batch_norm: bool = False
+    ) -> None:
+        """[summary]
 
-    return nn.Sequential(*layers)
+        Args:
+            dim_in (int): [description]
+            hidden_dim (int): [description]
+            feature_dim (int): [description]
+            num_layers (int, optional): [description]. Defaults to 2.
+            batch_norm (bool, optional): [description]. Defaults to False.
+        """
 
-
-class ProjectionMLP(nn.Module):
-    def __init__(self, dim_in, hidden_dim, feat_dim, batch_norm, num_layers):
         super(ProjectionMLP, self).__init__()
+        self.layers = self._make_layers(dim_in, hidden_dim, feature_dim, num_layers, batch_norm)
 
-        self.layers = self._make_layers(dim_in, hidden_dim, feat_dim, batch_norm, num_layers)
-
-    def _make_layers(self, dim_in, hidden_dim, feat_dim, batch_norm, num_layers):
+    def _make_layers(self, dim_in, hidden_dim, feature_dim, num_layers, batch_norm):
+        dims = [dim_in] + num_layers * [hidden_dim] + [feature_dim]
         layers = []
-        layers.append(add_linear(dim_in, hidden_dim, batch_norm=batch_norm, relu=True))
-
-        for _ in range(num_layers - 2):
-            layers.append(add_linear(hidden_dim, hidden_dim, batch_norm=batch_norm, relu=True))
-        
-        layers.append(add_linear(hidden_dim, feat_dim, batch_norm=batch_norm, relu=False))
+        for i in range(len(dims)):
+            layers.append(add_linear(
+                dim_in = dims[i], 
+                dim_out = dims[i + 1], 
+                batch_norm = batch_norm, 
+                relu = (i < len(dims) - 2))
+            )
         return nn.Sequential(*layers)
-
-    def forward(self, x):
-        return self.layers(x)
-
-
-class PredictionMLP(nn.Module):
-    def __init__(self, dim_in, hidden_dim, out_dim):
-        super(PredictionMLP, self).__init__()
-
-        self.layers = nn.Sequential(
-            nn.Linear(dim_in, hidden_dim),
-            nn.BatchNorm1d(hidden_dim),
-            nn.ReLU(inplace=True),
-            nn.Linear(hidden_dim, out_dim)
-        )
 
     def forward(self, x):
         return self.layers(x)

@@ -10,8 +10,10 @@ from data.transforms import get_transform
 class CIFARDataset(BaseDataset):
 
     _CIFAR_TYPE = None
+    _DEFAULT_N_TASKS = None
     _MEAN = (0.4914, 0.4822, 0.4465)
     _STD  = (0.2023, 0.1994, 0.2010)
+    _IMAGE_SIZE = 32
 
     def __init__(
         self,
@@ -61,8 +63,10 @@ class CIFARDataset(BaseDataset):
 @register_dataset("classy_cifar10")
 class CIFAR10Dataset(CIFARDataset):
     _CIFAR_TYPE = "cifar10"
+    _DEFAULT_N_TASKS = 5
 
 
 @register_dataset("classy_cifar100")
 class CIFAR100Dataset(CIFARDataset):
     _CIFAR_TYPE = "cifar100"
+    _DEFAULT_N_TASKS = 20

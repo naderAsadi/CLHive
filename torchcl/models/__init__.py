@@ -4,9 +4,9 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from models.base import BaseModel
+from torchcl.models.model_wrapper import ModelWrapper
 
-from utils.registry_utils import import_all_modules
+from torchcl.utils.registry_utils import import_all_modules
 
 
 FILE_ROOT = Path(__file__).parent
@@ -17,10 +17,10 @@ MODEL_REGISTRY_TB = {}
 MODEL_CLASS_NAMES_TB = {}
 
 def register_model(name, bypass_checks=False):
-    """Register a :class:`BaseModel` subclass.
+    """Register a :class:`ModelWrapper` subclass.
 
-    This decorator allows instantiating a subclass of :class:`BaseModel`
-    from a configuration file. To use it, apply this decorator to a `BaseModel`
+    This decorator allows instantiating a subclass of :class:`ModelWrapper`
+    from a configuration file. To use it, apply this decorator to a `ModelWrapper`
     subclass.
 
     Args:
@@ -34,9 +34,9 @@ def register_model(name, bypass_checks=False):
                 raise ValueError(
                     f"Cannot register duplicate model ({name}). Already registered at \n{MODEL_REGISTRY_TB[name]}\n"
                 )
-            if not issubclass(cls, BaseModel):
+            if not issubclass(cls, ModelWrapper):
                 raise ValueError(
-                    f"Model ({name}: {cls.__name__}) must extend BaseModel"
+                    f"Model ({name}: {cls.__name__}) must extend ModelWrapper"
                 )
             if cls.__name__ in MODEL_CLASS_NAMES:
                 raise ValueError(
@@ -51,7 +51,7 @@ def register_model(name, bypass_checks=False):
     
     return register_model_cls
 
-def get_model(config: Dict[str, Any]):
+def get_model(config: Dict[str, Any], *args, **kwargs):
     """Builds a model from a config.
 
     This assumes a 'name' key in the config which is used to determine what
@@ -64,10 +64,10 @@ def get_model(config: Dict[str, Any]):
     """
 
     assert config["name"] in MODEL_REGISTRY, "unknown model"
-    model = MODEL_REGISTRY[config["name"]].from_config(config)
+    model = MODEL_REGISTRY[config["name"]].from_config(config, *args, **kwargs)
 
     return model
 
 
 # automatically import any Python files in the models/ directory
-import_all_modules(FILE_ROOT, "models")
+import_all_modules(FILE_ROOT, "torchcl.models")

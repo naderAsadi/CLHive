@@ -2,13 +2,25 @@ import numpy as np
 import torch
 from torch.utils.data import Sampler
 
-# from data.base import
+from data.base import BaseDataset
 
 
 class ContinualSampler(Sampler):
 
-    def __init__(self, dataset, n_tasks, smooth_boundary=False):
+    def __init__(
+        self, 
+        dataset: BaseDataset, 
+        n_tasks: int, 
+        smooth_boundary: bool = False
+    ):
+        """[summary]
 
+        Args:
+            dataset (BaseDataset): [description]
+            n_tasks (int): [description]
+            smooth_boundary (bool, optional): [description]. Defaults to False.
+        """
+        
         self.ds = dataset
         self.n_tasks = n_tasks
         self.smooth_boundary = smooth_boundary

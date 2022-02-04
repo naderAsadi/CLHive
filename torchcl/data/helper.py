@@ -2,9 +2,24 @@ from copy import deepcopy
 
 import numpy as np
 import torch
+from torch.utils.data import DataLoader, Subset
+
+from data import BaseDataset, get_dataset
+from data.transforms import BaseTransform, get_transform
+from data.samplers import ContinualSampler
 
 
-def make_val_from_train(dataset, split=.9):
+def make_val_from_train(dataset: BaseDataset, split: float = 0.9):
+    """Create a validation set from training set.
+
+    Args:
+        dataset ([BaseDataset]): [description]
+        split (float, optional): [description]. Defaults to .9.
+
+    Returns:
+        [type]: [description]
+    """
+
     train_ds, val_ds = deepcopy(dataset), deepcopy(dataset)
 
     train_idx, val_idx = [], []
@@ -17,77 +32,63 @@ def make_val_from_train(dataset, split=.9):
     train_idx = np.concatenate(train_idx)
     val_idx   = np.concatenate(val_idx)
 
-    train_ds = torch.utils.data.Subset(dataset, train_idx)
-    val_ds   = torch.utils.data.Subset(dataset, val_idx)
+    train_ds = Subset(dataset, train_idx)
+    val_ds   = Subset(dataset, val_idx)
 
     return train_ds, val_ds
 
 
-def get_data_and_tfs(args):
-    dataset = {'cifar10' : CIFAR10,
-               'cifar100': CIFAR100,
-               'miniimagenet'  : MiniImagenet,
-               'imagenet32' : Imagenet32}[args.dataset]
+def get_loaders_and_transforms(config: Dict[str, Any]):
+    """[summary]
 
-    if args.n_tasks == -1:
-        args.n_tasks = dataset.default_n_tasks
+    Args:
+        config (Dict[str, Any]): [description]
 
+    Returns:
+        [type]: [description]
+    """
 
-    H = dataset.default_size
-    args.input_size = (3, H, H)
+    base_transform = BaseTransform()
+    train_transform = get_transform(transform_config=config)
 
-    base_tf  = dataset.base_transforms()
-    train_tf = dataset.train_transforms(use_augs=args.use_augs)
-    eval_tf  = dataset.eval_transforms()
+    val_set = val_loader = None
+    train_set = get_dataset(config, train = True)
+    test_set = get_dataset(config, train = False)
+    if config.validation:
+        train_set, val_set = make_val_from_train(trainval_ds)
 
-    ds_kwargs = {'root': args.data_root, 'download': args.download}
-
-    val_ds = test_ds = None
-
-    # if args.dataset == 'imagenet32':
-    #     train_ds, _, test_ds = get_imagenet32(args) 
-    if args.validation:
-        trainval_ds      = dataset(train=True, **ds_kwargs)
-        train_ds, val_ds = make_val_from_train(trainval_ds)
-        train_ds.dataset.transform = base_tf
-        val_ds.dataset.transform   = eval_tf
-    else:
-        train_ds         = dataset(train=True, transform=base_tf, **ds_kwargs)
-        test_ds          = dataset(train=False, transform=eval_tf, **ds_kwargs)
-
-    train_sampler = ContinualSampler(train_ds, args.n_tasks, args, smooth=args.smooth)
-    train_loader  = torch.utils.data.DataLoader(
-        train_ds,
-        num_workers=args.num_workers,
+    train_sampler = ContinualSampler(dataset = train_set, n_tasks = config.n_tasks)
+    train_loader  = DataLoader(
+        train_set,
+        num_workers=config.num_workers,
         sampler=train_sampler,
-        batch_size=args.batch_size,
+        batch_size=config.batch_size,
+        pin_memory=True
+    )
+
+    test_sampler  = ContinualSampler(dataset = test_set,  n_tasks = config.n_tasks)
+    test_loader = DataLoader(
+        test_set,
+        num_workers=config.num_workers,
+        batch_size=config.batch_size,
+        sampler=test_sampler,
         pin_memory=True
     )
 
     if val_ds is not None:
-        val_sampler = ContinualSampler(val_ds, args.n_tasks, args)
-        test_loader = None
-        val_loader  = torch.utils.data.DataLoader(
-            val_ds,
-            num_workers=args.num_workers,
-            batch_size=128,
+        val_sampler = ContinualSampler(dataset = val_ds, n_tasks = config.n_tasks)
+        val_loader  = DataLoader(
+            val_set,
+            num_workers=config.num_workers,
+            batch_size=config.batch_size,
             sampler=val_sampler,
             pin_memory=True
         )
+    
+    if config.n_tasks == -1:
+        config.n_tasks = dataset._DEFAULT_N_TASKS
+    config.input_size = (3, dataset._IMAGE_SIZE, dataset._IMAGE_SIZE)
+    config.n_classes = train_sampler.n_classes
+    config.n_classes_per_task = args.n_classes // args.n_tasks
 
-    elif test_ds is not None:
-        test_sampler  = ContinualSampler(test_ds,  args.n_tasks, args)
-        val_loader  = None
-        test_loader = torch.utils.data.DataLoader(
-            test_ds,
-            num_workers=args.num_workers,
-            batch_size=128,
-            sampler=test_sampler,
-            pin_memory=True
-        )
-
-
-    args.n_classes = train_sampler.n_classes
-    args.n_classes_per_task = args.n_classes // args.n_tasks
-
-    return train_tf, train_loader, val_loader, test_loader
+    return train_transform, train_loader, val_loader, test_loader

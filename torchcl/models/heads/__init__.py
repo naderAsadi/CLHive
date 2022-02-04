@@ -2,9 +2,9 @@ import copy
 import traceback
 from pathlib import Path
 
-from utils.registry_utils import import_all_modules
+from torchcl.utils.registry_utils import import_all_modules
 
-from model.heads.base import BaseHead
+from torchcl.models.heads.base import BaseHead
 
 
 FILE_ROOT = Path(__file__).parent
@@ -66,4 +66,6 @@ def get_head(config):
 
 
 # automatically import any Python files in the heads/ directory
-import_all_modules(FILE_ROOT, "models.heads")
+import_all_modules(FILE_ROOT, "torchcl.models.heads")
+
+from .mlp import LinearClassifier, DistLinear, ProjectionMLP

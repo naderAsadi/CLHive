@@ -7,7 +7,6 @@ import torchvision.transforms as transforms
 import torchvision.transforms._transforms_video as transforms_video
 
 from utils.registry_utils import import_all_modules
-from data.transforms.base import ClassyTransform
 
 
 FILE_ROOT = Path(__file__).parent
@@ -61,6 +60,7 @@ def get_transform(transform_config: Dict[str, Any]) -> Callable:
     transforms.html>`_ module. Any keys in the config will get expanded
     to parameters of the transform constructor. For instance, the following
     call will instantiate a :class:`torchvision.transforms.CenterCrop`:
+    
     .. code-block:: python
       get_transform({"name": "CenterCrop", "size": 224})
     """
@@ -100,3 +100,6 @@ def get_transforms(transforms_config: List[Dict[str, Any]]) -> Callable:
 
 # automatically import any Python files in the transforms/ directory
 import_all_modules(FILE_ROOT, "classy_vision.dataset.transforms")
+
+from data.transforms.base_transform import BaseTransform
+from data.transforms.simclr_transform import SimCLRTransform

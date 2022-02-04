@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 
 
-class BaseModel(nn.Module):
+class ModelWrapper(nn.Module):
     """Base class for models in torchCL.
 
     A model refers either to a specific architecture (e.g. ResNet50) or a
@@ -22,12 +22,24 @@ class BaseModel(nn.Module):
     completely optional.
     """
 
-    def __init__(self):
-        super().__init__()
-        self._heads = nn.ModuleDict()
+    def __init__(
+        self, 
+        model: nn.Module, 
+        heads: nn.ModuleDict
+    ) -> None:
+        """[summary]
+
+        Args:
+            model (nn.Module): [description]
+            heads (nn.ModuleDict): [description]
+        """
+
+        super(ModelWrapper, self).__init__()
+        self._model = model
+        self._heads = heads
     
     @classmethod
-    def from_config(cls, config: Dict[str, Any]) -> "BaseModel":
+    def from_config(cls, config: Dict[str, Any], *args, **kwargs) -> "ModelWrapper":
         """Instantiates a Model from a configuration.
 
         Args:
@@ -37,11 +49,22 @@ class BaseModel(nn.Module):
             A torch.nn.Module instance.
         """
 
-        raise NotImplementedError
+        return cls(*args, **kwargs)
     
-    def forward(self, x):
+    def set_heads(self, heads: nn.ModuleDict):
+        self._heads = heads
+    
+    def add_head(self, name: str, head: nn.Module):
+        self._heads.update({name: head})
+    
+    def forward(self, x, head_name: str):
         """
         Perform computation of blocks in the order define in get_blocks.
         """
+        assert head_name in self._heads.keys(), (
+            f"{head_name} does not exist in {self._heads.keys()}"
+        )
 
-        raise NotImplementedError
+        return self._heads[head_name](x)
+
+        

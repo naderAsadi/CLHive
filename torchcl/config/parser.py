@@ -1,11 +1,26 @@
+import sys
+
 import hydra
 from omegaconf import DictConfig
 
 
-@hydra.main(config_path=".", config_name="defaults")
-def parser(cfg: DictConfig) -> DictConfig:
-    print(cfg)
-    return cfg
+def config_parser(
+    config_path:str, 
+    config_name:str, 
+    job_name:str
+) -> DictConfig:
+    """[summary]
 
-# if __name__ == "__main__":
-#     parser()
+    Args:
+        config_path (str): [description]
+        config_name (str): [description]
+        job_name (str): [description]
+
+    Returns:
+        DictConfig: [description]
+    """
+
+    overrides = sys.argv[1:]
+    with hydra.initialize(config_path=config_path, job_name=job_name):
+        cfg = hydra.compose(config_name=config_name, overrides=overrides)
+    return cfg

@@ -4,9 +4,9 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from losses.base import BaseLoss
+# from losses.base import BaseLoss
 
-from utils.registry_utils import import_all_modules
+from torchcl.utils.registry_utils import import_all_modules
 
 
 FILE_ROOT = Path(__file__).parent
@@ -70,4 +70,4 @@ def get_loss(config: Dict[str, Any]):
 
 
 # automatically import any Python files in the losses/ directory
-import_all_modules(FILE_ROOT, "losses")
+import_all_modules(FILE_ROOT, "torchcl.losses")
