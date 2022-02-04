@@ -71,3 +71,7 @@ def get_model(config: Dict[str, Any], *args, **kwargs):
 
 # automatically import any Python files in the models/ directory
 import_all_modules(FILE_ROOT, "torchcl.models")
+
+import torchcl.models.heads
+from .model_wrapper import ModelWrapper
+from .resnet import ResNet18, ResNet34, ResNet50, ResNet101

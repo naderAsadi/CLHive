@@ -54,15 +54,16 @@ def register_head(name, bypass_checks=False):
     return register_head_cls
 
 
-def get_head(config):
+def get_head(config, *args, **kwargs):
     """Builds a Head from a config.
 
     This assumes a 'name' key in the config which is used to determine what
     head class to instantiate. For instance, a config `{"name": "my_head",
     "foo": "bar"}` will find a class that was registered as "my_head"
-    (see :func:`register_head`) and call .from_config on it."""
+    (see :func:`register_head`) and call .from_config on it.
+    """
 
-    return HEAD_REGISTRY[name].from_config(config)
+    return HEAD_REGISTRY[name].from_config(config, *args, **kwargs)
 
 
 # automatically import any Python files in the heads/ directory
