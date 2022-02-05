@@ -9,6 +9,7 @@ from fvcore.nn import FlopCountAnalysis as FCA
 
 from torchcl.models import ModelWrapper
 from torchcl.data.transforms import BaseTransform
+from torchcl.utils import get_optimizer
 
 
 class BaseMethod(nn.Module):
@@ -20,8 +21,9 @@ class BaseMethod(nn.Module):
         self,
         model : ModelWrapper,
         logger,
-        transform: BaseTransform,
-        config
+        config,
+        transform: Optional[BaseTransform] = BaseTransform,
+        optim: Optional[torch.optim] = None,
     ) -> None:
 
         super(BaseMethod, self).__init__()
@@ -31,13 +33,13 @@ class BaseMethod(nn.Module):
         self.transform = transform
         self.config = config
 
+        if optim is None:
+            optim = get_optimizer(self.config)
+        self.optim = optim
+
     
     @property
     def name(self):
-        raise NotImplementedError
-
-    @property
-    def cost(self):
         raise NotImplementedError
 
     @property
@@ -50,3 +52,32 @@ class BaseMethod(nn.Module):
             self._train_cost = flops.total() / 1e6 # MegaFlops
 
         return self._train_cost
+
+    @classmethod
+    def from_config(cls, config):
+        raise NotImplementedError
+
+    def train(self):
+        self.model.train()
+    
+    def eval(self):
+        self.model.eval()
+    
+    def update(self, loss):
+        self.optim.zero_grad()
+        loss.backward()
+        self.optim.step()
+
+    def observe(self, data):
+        raise NotImplementedError
+
+    def predict(self, data):
+        raise NotImplementedError
+
+    def on_task_start(self):
+        raise NotImplementedError
+
+    def on_task_end(self):
+        raise NotImplementedError
+
+    
