@@ -37,6 +37,8 @@ class BaseMethod(nn.Module):
             optim = get_optimizer(self.config)
         self.optim = optim
 
+        self._model_history = {}
+
     
     @property
     def name(self):
@@ -52,6 +54,35 @@ class BaseMethod(nn.Module):
             self._train_cost = flops.total() / 1e6 # MegaFlops
 
         return self._train_cost
+    
+    def get_model(self, task_id: int = None):
+        """[summary]
+
+        Args:
+            task_id (int, optional): [description]. Defaults to None.
+
+        Returns:
+            [type]: [description]
+        """
+        if task_id is None:
+            return self.model
+
+        assert str(task_id) in self._model_history.keys(), (
+            f"No trained model is available for task {task_id}."
+        )
+        return self._model_history[str(task_id)]
+
+    def set_model(self, model: ModelWrapper, task_id: int):
+        """[summary]
+
+        Args:
+            model (ModelWrapper): [description]
+            task_id (int): [description]
+        """
+        assert model is not None, (
+            "Input model cannot be None."
+        )
+        self._model_history[str(task_id)] = model
 
     @classmethod
     def from_config(cls, config):
