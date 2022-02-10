@@ -37,7 +37,7 @@ class CIFARDataset(BaseDataset):
         )
 
     @classmethod
-    def from_config(cls, config: Dict[str, Any]) -> "CIFARDataset":
+    def from_config(cls, config: Dict[str, Any], train: bool) -> "CIFARDataset":
         """Instantiates a CIFARDataset from a configuration.
         Args:
             config: A configuration for a CIFARDataset.
@@ -47,8 +47,8 @@ class CIFARDataset(BaseDataset):
         """
         
         root = config.get("root")
-        train = config.get("train")
-        transform_config = config.get("transforms")
+        train = train
+        transform_config = config.get("transform")
         download = config.get("download")
 
         transform = get_transform(transform_config)

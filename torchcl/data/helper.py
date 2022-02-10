@@ -51,15 +51,15 @@ def get_loaders_and_transforms(config: Dict[str, Any]):
     """
 
     base_transform = BaseTransform()
-    train_transform = get_transform(transform_config=config)
+    train_transform = get_transform(transform_config=config.data.transform)
 
     val_set = val_loader = None
-    train_set = get_dataset(config, train = True)
-    test_set = get_dataset(config, train = False)
-    if config.validation:
-        train_set, val_set = make_val_from_train(trainval_ds)
+    train_set = get_dataset(config.data, train = True)
+    test_set = get_dataset(config.data, train = False)
+    # if config.validation:
+    #     train_set, val_set = make_val_from_train(trainval_ds)
 
-    train_sampler = ContinualSampler(dataset = train_set, n_tasks = config.n_tasks)
+    train_sampler = ContinualSampler(dataset = train_set, n_tasks = config.data.n_tasks)
     train_loader  = DataLoader(
         train_set,
         num_workers=config.num_workers,
@@ -68,7 +68,7 @@ def get_loaders_and_transforms(config: Dict[str, Any]):
         pin_memory=True
     )
 
-    test_sampler  = ContinualSampler(dataset = test_set,  n_tasks = config.n_tasks)
+    test_sampler  = ContinualSampler(dataset = test_set,  n_tasks = config.data.n_tasks)
     test_loader = DataLoader(
         test_set,
         num_workers=config.num_workers,
@@ -78,7 +78,7 @@ def get_loaders_and_transforms(config: Dict[str, Any]):
     )
 
     if val_ds is not None:
-        val_sampler = ContinualSampler(dataset = val_ds, n_tasks = config.n_tasks)
+        val_sampler = ContinualSampler(dataset = val_ds, n_tasks = config.data.n_tasks)
         val_loader  = DataLoader(
             val_set,
             num_workers=config.num_workers,
@@ -87,10 +87,10 @@ def get_loaders_and_transforms(config: Dict[str, Any]):
             pin_memory=True
         )
     
-    if config.n_tasks == -1:
-        config.n_tasks = dataset._DEFAULT_N_TASKS
-    config.input_size = (3, dataset._IMAGE_SIZE, dataset._IMAGE_SIZE)
-    config.n_classes = train_sampler.n_classes
-    config.n_classes_per_task = args.n_classes // args.n_tasks
+    if config.data.n_tasks == -1:
+        config.data.n_tasks = dataset._DEFAULT_N_TASKS
+    config.data.input_size = (3, dataset._IMAGE_SIZE, dataset._IMAGE_SIZE)
+    config.data.n_classes = train_sampler.n_classes
+    config.data.n_classes_per_task = config.data.n_classes // config.data.n_tasks
 
     return train_transform, train_loader, val_loader, test_loader

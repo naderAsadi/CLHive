@@ -46,7 +46,9 @@ config:
     n_tasks: ???
     download: true
     smooth: false
-
+    transform:
+      name: base
+    
   logging:
     exp_name: tmp
     wandb_log: false

@@ -3,7 +3,10 @@ from typing import Any, Dict
 import torch.nn as nn
 from torchvision import transforms
 
+from . import register_transform
 
+
+@register_transform("base")
 class BaseTransform(nn.Module):
     """
     Class representing a data transform abstraction.
@@ -18,7 +21,7 @@ class BaseTransform(nn.Module):
 
         self.tfs = transforms.Compose([
             transforms.ToTensor(),
-            normalize
+            self.normalize,
         ])
 
     def __call__(self, input):
