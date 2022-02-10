@@ -62,34 +62,34 @@ def get_loaders_and_transforms(config: Dict[str, Any]):
     train_sampler = ContinualSampler(dataset = train_set, n_tasks = config.data.n_tasks)
     train_loader  = DataLoader(
         train_set,
-        num_workers=config.num_workers,
+        num_workers=config.data.n_workers,
         sampler=train_sampler,
-        batch_size=config.batch_size,
+        batch_size=config.train.batch_size,
         pin_memory=True
     )
 
     test_sampler  = ContinualSampler(dataset = test_set,  n_tasks = config.data.n_tasks)
     test_loader = DataLoader(
         test_set,
-        num_workers=config.num_workers,
-        batch_size=config.batch_size,
+        num_workers=config.data.n_workers,
+        batch_size=config.eval.batch_size,
         sampler=test_sampler,
         pin_memory=True
     )
 
-    if val_ds is not None:
-        val_sampler = ContinualSampler(dataset = val_ds, n_tasks = config.data.n_tasks)
+    if val_set is not None:
+        val_sampler = ContinualSampler(dataset = val_set, n_tasks = config.data.n_tasks)
         val_loader  = DataLoader(
             val_set,
-            num_workers=config.num_workers,
-            batch_size=config.batch_size,
+            num_workers=config.data.n_workers,
+            batch_size=config.eval.batch_size,
             sampler=val_sampler,
             pin_memory=True
         )
     
     if config.data.n_tasks == -1:
-        config.data.n_tasks = dataset._DEFAULT_N_TASKS
-    config.data.input_size = (3, dataset._IMAGE_SIZE, dataset._IMAGE_SIZE)
+        config.data.n_tasks = train_set._DEFAULT_N_TASKS
+    config.data.image_size = (3, train_set._IMAGE_SIZE, train_set._IMAGE_SIZE)
     config.data.n_classes = train_sampler.n_classes
     config.data.n_classes_per_task = config.data.n_classes // config.data.n_tasks
 

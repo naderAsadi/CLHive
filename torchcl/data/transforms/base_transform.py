@@ -15,7 +15,7 @@ class BaseTransform(nn.Module):
     def __init__(self, mean=None, std=None):
         super().__init__()
 
-        self.normalize = None
+        self.normalize = nn.Identity()
         if (mean is not None) and (std is not None):
             self.normalize = transforms.Normalize(mean, std)
 

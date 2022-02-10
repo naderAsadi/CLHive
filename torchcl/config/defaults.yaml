@@ -31,6 +31,7 @@ config:
 
   eval:
     scenario: single_head # instead of singlelinear and multilinear
+    batch_size: 32
     probe_eval: false # instead of keep_training_data
     cka_eval: false
     eval_layer: -1
@@ -43,9 +44,13 @@ config:
   data:
     dataset: cifar10
     root: ../cl-datasets/data/
+    image_size: ???
     n_tasks: ???
+    n_classes: ???
+    n_classes_per_task: ???
     download: true
     smooth: false
+    n_workers: 0
     transform:
       name: base
     

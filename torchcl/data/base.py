@@ -16,6 +16,8 @@ class BaseDataset:
             dataset (Sequence): [description]
             transform (Optional[Union[BaseTransform, Callable]]): [description]
         """
+        if transform is None:
+            transform = BaseTransform()
 
         self.dataset = dataset
         self.transform = transform
@@ -31,11 +33,14 @@ class BaseDataset:
         raise NotImplementedError
 
     def __getitem__(self, index: int):
-        assert index >= 0 and index < len(self.dataset), f"Provided index ({index}) is outside of dataset range."
+        assert index >= 0 and index < len(self.dataset), (
+            f"Provided index ({index}) is outside of dataset range."
+        )
         sample = self.dataset[index]
+        data, targets = sample
         if self.transform is not None:
-            sample = self.transform(sample)
-        return sample
+            data = self.transform(data)
+        return data, targets
     
     def __len__(self):
         return len(self.dataset)

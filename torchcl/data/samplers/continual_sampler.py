@@ -29,7 +29,7 @@ class ContinualSampler(Sampler):
         if isinstance(dataset, torch.utils.data.Subset):
             ds_targets = np.array(dataset.dataset.targets)[dataset.indices]
         else:
-            ds_targets = dataset.targets
+            ds_targets = dataset.dataset.targets
 
         self.classes = np.unique(ds_targets)
 
@@ -45,13 +45,22 @@ class ContinualSampler(Sampler):
         self._current_task = None
         self.target_indices = {}
 
+        # for smooth datasets
+        self.t = 0
+        self.per_class_samples_left = torch.zeros(self.classes.shape[0]).int()
+
+        for label in self.classes:
+            self.target_indices[label] = \
+                    np.squeeze(np.argwhere(ds_targets == label))
+            np.random.shuffle(self.target_indices[label])
+            self.per_class_samples_left[label] = self.target_indices[label].shape[0]
+
     @property
     def current_task(self):
         return self._current_task
 
-    @current_task.setter
-    def current_task(self, current_task, sample_all_seen_tasks=False):
-        self._current_task = current_task
+    def set_task(self, task_id: int, sample_all_seen_tasks: bool = False):
+        self._current_task = task_id
         self.sample_all_seen_tasks = sample_all_seen_tasks
 
     def _fetch_task_samples(self, task_id):

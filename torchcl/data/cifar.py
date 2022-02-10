@@ -27,10 +27,14 @@ class CIFARDataset(BaseDataset):
             "cifar10",
             "cifar100"
         ], "CIFARDataset must be subclassed and a valid _CIFAR_TYPE provided"
+
         if self._CIFAR_TYPE == "cifar10":
             dataset = CIFAR10(root, train=train, download=download)
         if self._CIFAR_TYPE == "cifar100":
             dataset = CIFAR100(root, train=train, download=download)
+
+        if transform is None:
+            transform = BaseTransform(mean=CIFARDataset._MEAN, std=CIFARDataset._STD)
 
         super().__init__(
             dataset=dataset, transform=transform
