@@ -1,14 +1,13 @@
 from cmath import log
 import copy
-from statistics import mode
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
 from fvcore.nn import FlopCountAnalysis, flop_count_table
 
 from torchcl.models import ModelWrapper
-from torchcl.data.transforms import BaseTransform
+from torchcl.data.transforms.base_transform import BaseTransform
 from torchcl.utils import get_optimizer
 
 
@@ -19,11 +18,11 @@ class BaseMethod(nn.Module):
 
     def __init__(
         self,
+        config,
         model : ModelWrapper,
         logger,
-        config,
-        transform: Optional[BaseTransform] = BaseTransform,
-        optim: Optional[torch.optim] = None,
+        transform: BaseTransform = BaseTransform,
+        optim: torch.optim = None,
     ) -> None:
 
         super(BaseMethod, self).__init__()
@@ -38,11 +37,16 @@ class BaseMethod(nn.Module):
         self.optim = optim
 
         self._model_history = {}
+        self._current_task_id = 0
 
     
     @property
     def name(self):
         raise NotImplementedError
+
+    @property
+    def current_task(self):
+        return self._current_task_id
 
     @property
     def one_sample_flop(self):
@@ -65,7 +69,7 @@ class BaseMethod(nn.Module):
         Returns:
             [type]: [description]
         """
-        if task_id is None:
+        if (task_id is None) or (task_id == self._current_task_id):
             return self.model
 
         assert str(task_id) in self._model_history.keys(), (
@@ -83,11 +87,11 @@ class BaseMethod(nn.Module):
         assert model is not None, (
             "Input model cannot be None."
         )
-        self._model_history[str(task_id)] = model
 
-    @classmethod
-    def from_config(cls, config):
-        raise NotImplementedError
+        if (task_id is None) or (task_id == self._current_task_id):
+            self.model = model
+        else:
+            self._model_history[str(task_id)] = model
 
     def train(self):
         self.model.train()
@@ -100,16 +104,22 @@ class BaseMethod(nn.Module):
         loss.backward()
         self.optim.step()
 
-    def observe(self, data):
+    def observe(self, data: Dict[str, torch.Tensor]):
         raise NotImplementedError
 
-    def predict(self, data):
-        raise NotImplementedError
+    def predict(self, x: torch.Tensor) -> torch.Tensor:
+        return self.model(x)
 
     def on_task_start(self):
-        raise NotImplementedError
+        pass
 
     def on_task_end(self):
-        raise NotImplementedError
+        """[summary]
+        """
+        # save snapshots and other stuff
+
+        self._current_task_id = min(self._current_task_id + 1, self.config.data.n_tasks - 1)
+
+
 
     

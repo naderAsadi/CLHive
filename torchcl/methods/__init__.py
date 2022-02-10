@@ -4,7 +4,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-# from torchcl.methods.base import BaseMethod
+from .base import BaseMethod
 
 from torchcl.utils.registry_utils import import_all_modules
 
@@ -34,7 +34,7 @@ def register_method(name, bypass_checks=False):
                 raise ValueError(
                     f"Cannot register duplicate method ({name}). Already registered at \n{METHOD_REGISTRY_TB[name]}\n"
                 )
-            if not issubclass(cls, Basemethod):
+            if not issubclass(cls, BaseMethod):
                 raise ValueError(
                     f"Method ({name}: {cls.__name__}) must extend BaseMethod"
                 )
@@ -51,7 +51,7 @@ def register_method(name, bypass_checks=False):
     
     return register_method_cls
 
-def get_method(config: Dict[str, Any]):
+def get_method(config: Dict[str, Any], *args, **kwargs):
     """Builds a method from a config.
 
     This assumes a 'name' key in the config which is used to determine what
@@ -63,11 +63,13 @@ def get_method(config: Dict[str, Any]):
         config ([type]): [description]
     """
 
-    assert config["name"] in METHOD_REGISTRY, "unknown method"
-    method = METHOD_REGISTRY[config["name"]].from_config(config)
+    assert config["method"] in METHOD_REGISTRY, "unknown method"
+    method = METHOD_REGISTRY[config["method"]](config=config, *args, **kwargs)
 
     return method
 
 
 # automatically import any Python files in the methods/ directory
 import_all_modules(FILE_ROOT, "torchcl.methods")
+
+from .finetuning import FineTuning

@@ -4,7 +4,7 @@ from pathlib import Path
 
 from torchcl.utils.registry_utils import import_all_modules
 
-from torchcl.models.heads.base import BaseHead
+from .base import BaseHead
 
 
 FILE_ROOT = Path(__file__).parent

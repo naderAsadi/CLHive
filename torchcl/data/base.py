@@ -1,6 +1,6 @@
 from typing import Any, Callable, Dict, Optional, Sequence, Union
 
-from data.transforms.base import BaseTransform
+from torchcl.data.transforms.base_transform import BaseTransform
 
 
 class BaseDataset:

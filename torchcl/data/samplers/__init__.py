@@ -7,7 +7,7 @@ from torch.utils.data import Sampler
 # import torchvision.transforms as transforms
 # import torchvision.transforms._transforms_video as transforms_video
 
-from utils.registry_utils import import_all_modules
+from torchcl.utils.registry_utils import import_all_modules
 
 
 FILE_ROOT = Path(__file__).parent
@@ -45,6 +45,6 @@ def get_sampler(sampler_config: Dict[str, Any]) -> Callable:
 
 
 # automatically import any Python files in the samplers/ directory
-import_all_modules(FILE_ROOT, "data.samplers")
+import_all_modules(FILE_ROOT, "torchcl.data.samplers")
 
-from data.samplers.continual_sampler import ContinualSampler
+from torchcl.data.samplers.continual_sampler import ContinualSampler

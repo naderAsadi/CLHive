@@ -43,6 +43,7 @@ config:
   data:
     dataset: cifar10
     root: ../cl-datasets/data/
+    n_tasks: ???
     download: true
     smooth: false
 

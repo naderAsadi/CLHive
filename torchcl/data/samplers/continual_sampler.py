@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from torch.utils.data import Sampler
 
-from data.base import BaseDataset
+from torchcl.data.base import BaseDataset
 
 
 class ContinualSampler(Sampler):

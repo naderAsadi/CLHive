@@ -2,9 +2,9 @@ from typing import Any, Callable, Dict, Optional, Sequence, Union
 
 from torchvision.datasets.cifar import CIFAR10, CIFAR100
 
-from data import register_dataset
-from data.base import BaseDataset
-from data.transforms import get_transform
+from torchcl.data import register_dataset
+from torchcl.data.base import BaseDataset
+from torchcl.data.transforms import get_transform, BaseTransform
 
 
 class CIFARDataset(BaseDataset):
@@ -60,13 +60,13 @@ class CIFARDataset(BaseDataset):
         )
 
 
-@register_dataset("classy_cifar10")
+@register_dataset("cifar10")
 class CIFAR10Dataset(CIFARDataset):
     _CIFAR_TYPE = "cifar10"
     _DEFAULT_N_TASKS = 5
 
 
-@register_dataset("classy_cifar100")
+@register_dataset("cifar100")
 class CIFAR100Dataset(CIFARDataset):
     _CIFAR_TYPE = "cifar100"
     _DEFAULT_N_TASKS = 20

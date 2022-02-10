@@ -1,9 +1,9 @@
 import traceback
 from pathlib import Path
 
-from utils.registry_utils import import_all_modules
+from torchcl.utils.registry_utils import import_all_modules
 
-from data.base import BaseDataset
+from .base import BaseDataset
 
 
 FILE_ROOT = Path(__file__).parent
@@ -61,12 +61,13 @@ def get_dataset(config, *args, **kwargs):
     "folder": "/data"}` will find a class that was registered as "my_dataset"
     (see :func:`register_dataset`) and call .from_config on it.
     """
-    dataset = DATASET_REGISTRY[config["name"]].from_config(config, *args, **kwargs)
+    dataset = DATASET_REGISTRY[config["dataset"]].from_config(config, *args, **kwargs)
     return dataset
 
 
 # automatically import any Python files in the data/ directory
-import_all_modules(FILE_ROOT, "data")
+# import_all_modules(FILE_ROOT, "torchcl.data")
 
-from data.helper import get_loaders_and_transforms
-from data.cifar import CIFAR10, CIFAR100
+# import transforms 
+from .helper import get_loaders_and_transforms
+from .cifar import CIFAR10, CIFAR100

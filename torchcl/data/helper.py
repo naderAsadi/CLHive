@@ -1,12 +1,14 @@
+from typing import Any, Dict, List, Optional, Tuple
 from copy import deepcopy
 
 import numpy as np
 import torch
 from torch.utils.data import DataLoader, Subset
 
-from data import BaseDataset, get_dataset
-from data.transforms import BaseTransform, get_transform
-from data.samplers import ContinualSampler
+from . import get_dataset
+from torchcl.data.base import BaseDataset
+from torchcl.data.transforms import BaseTransform, get_transform
+from torchcl.data.samplers import ContinualSampler
 
 
 def make_val_from_train(dataset: BaseDataset, split: float = 0.9):

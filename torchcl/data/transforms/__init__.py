@@ -3,13 +3,14 @@ import traceback
 from pathlib import Path
 from typing import Any, Callable, Dict, List
 
-import torchvision.transforms as transforms
-import torchvision.transforms._transforms_video as transforms_video
+import torchvision.transforms as pth_transforms
+import torchvision.transforms._transforms_video as pth_transforms_video
 
-from utils.registry_utils import import_all_modules
+from torchcl.utils.registry_utils import import_all_modules
 
 
 FILE_ROOT = Path(__file__).parent
+print(FILE_ROOT)
 
 TRANSFORM_REGISTRY = {}
 TRANSFORM_REGISTRY_TB = {}
@@ -32,7 +33,7 @@ def register_transform(name: str, bypass_checks=False):
             if name in TRANSFORM_REGISTRY:
                 msg = "Cannot register duplicate transform ({}). Already registered at \n{}\n"
                 raise ValueError(msg.format(name, TRANSFORM_REGISTRY_TB[name]))
-            if hasattr(transforms, name) or hasattr(transforms_video, name):
+            if hasattr(pth_transforms, name) or hasattr(pth_transforms_video, name):
                 raise ValueError(
                     "{} has existed in torchvision.transforms, Please change the name!".format(
                         name
@@ -77,16 +78,16 @@ def get_transform(transform_config: Dict[str, Any]) -> Callable:
         # the name should be available in torchvision.transforms
         # if users specify the torchvision transform name in snake case,
         # we need to convert it to title case.
-        if not (hasattr(transforms, name) or hasattr(transforms_video, name)):
+        if not (hasattr(pth_transforms, name) or hasattr(pth_transforms_video, name)):
             name = name.title().replace("_", "")
-        assert hasattr(transforms, name) or hasattr(transforms_video, name), (
+        assert hasattr(pth_transforms, name) or hasattr(pth_transforms_video, name), (
             f"{name} isn't a registered tranform"
             ", nor is it available in torchvision.transforms"
         )
-        if hasattr(transforms, name):
-            transform = getattr(transforms, name)(**transform_args)
+        if hasattr(pth_transforms, name):
+            transform = getattr(pth_transforms, name)(**transform_args)
         else:
-            transform = getattr(transforms_video, name)(**transform_args)
+            transform = getattr(pth_transforms_video, name)(**transform_args)
 
     return transform
 
@@ -95,11 +96,12 @@ def get_transforms(transforms_config: List[Dict[str, Any]]) -> Callable:
     Builds a transform from the list of transform configurations.
     """
     transform_list = [get_transform(config) for config in transforms_config]
-    return transforms.Compose(transform_list)
+    return pth_transforms.Compose(transform_list)
 
 
 # automatically import any Python files in the transforms/ directory
-import_all_modules(FILE_ROOT, "classy_vision.dataset.transforms")
+import_all_modules(FILE_ROOT, "torchcl.data.transforms")
 
-from data.transforms.base_transform import BaseTransform
-from data.transforms.simclr_transform import SimCLRTransform
+from .simclr_transform import SimCLRTransform
+from .base_transform import BaseTransform 
+

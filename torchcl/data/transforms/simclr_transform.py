@@ -3,7 +3,8 @@ from typing import Any, Dict
 import torch
 from torchvision import transforms
 
-from data.transforms import BaseTransform, register_transform
+from . import register_transform
+from .base_transform import BaseTransform
 
 
 @register_transform("simclr")
