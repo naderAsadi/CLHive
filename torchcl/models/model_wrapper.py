@@ -57,14 +57,22 @@ class ModelWrapper(nn.Module):
     def add_head(self, name: str, head: nn.Module):
         self._heads.update({name: head})
     
+    def forward_model(self, x):
+        return self._model(x)
+
+    def forward_head(self, x, head_name: str):
+        return self._heads[str(head_name)](x)
+
     def forward(self, x, head_name: str):
         """
         Perform computation of blocks in the order define in get_blocks.
         """
-        assert head_name in self._heads.keys(), (
+
+        assert head_name not in self._heads.keys(), (
             f"{head_name} does not exist in {self._heads.keys()}"
         )
-
-        return self._heads[head_name](x)
+        
+        x = self._model(x)
+        return self._heads[str(head_name)](x)
 
         

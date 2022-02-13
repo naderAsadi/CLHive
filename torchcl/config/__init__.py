@@ -1,1 +1,1 @@
-from torchcl.config.parser import config_parser
+from .parser import config_parser

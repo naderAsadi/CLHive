@@ -11,6 +11,8 @@ class FineTuning(BaseMethod):
     def __init__(self, config, model, logger, transform, optim) -> None:
         super().__init__(config, model, logger, transform, optim)
 
+        self.loss = torch.nn.CrossEntropyLoss()
+
     @property
     def name(self):
         return "finetuning"
@@ -18,7 +20,9 @@ class FineTuning(BaseMethod):
     def observe(self, data):
         aug_data = self.transform(data['x'])
 
-        pred = self.model(aug_data)
+        pred = self.model(aug_data, data['t'])
         loss = self.loss(pred, data['y'])
 
         self.update(loss)
+
+        return loss

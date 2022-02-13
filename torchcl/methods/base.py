@@ -107,8 +107,8 @@ class BaseMethod(nn.Module):
     def observe(self, data: Dict[str, torch.Tensor]):
         raise NotImplementedError
 
-    def predict(self, x: torch.Tensor) -> torch.Tensor:
-        return self.model(x)
+    def predict(self, data: torch.Tensor) -> torch.Tensor:
+        return self.model(data['x'], data['t'])
 
     def on_task_start(self):
         pass
