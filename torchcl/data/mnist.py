@@ -1,6 +1,7 @@
-from typing import Callable, Dict, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Tuple, Union
+from PIL import Image
 
-from torchvision.datasets.cifar import MNIST
+from torchvision.datasets.mnist import MNIST
 
 from torchcl.data import register_dataset
 from torchcl.data.base import BaseDataset
@@ -8,7 +9,7 @@ from torchcl.data.transforms import get_transform, BaseTransform
 
 
 @register_dataset("seq_mnist")
-class MNISTDataset(MNIST):
+class MNISTDataset(BaseDataset):
 
     def __init__(
         self,
@@ -24,6 +25,29 @@ class MNISTDataset(MNIST):
         
         super().__init__(
             dataset=dataset, transform=transform
+        )
+
+    @classmethod
+    def from_config(cls, config: Dict[str, Any], train: bool) -> "MNISTDataset":
+        """Instantiates a MNISTDataset from a configuration.
+        Args:
+            config: A configuration for a MNISTDataset.
+                See :func:`__init__` for parameters expected in the config.
+        Returns:
+            A MNISTDataset instance.
+        """
+        
+        root = config.get("root")
+        train = train
+        transform_config = config.get("transform")
+        download = config.get("download")
+
+        transform = get_transform(transform_config)
+        return cls(
+            root=root, 
+            transform=transform,
+            train=train,
+            download=True
         )
     
     def __getitem__(self, index: int) -> Tuple[type(Image), int, type(Image)]:
