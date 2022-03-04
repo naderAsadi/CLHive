@@ -7,7 +7,7 @@ import torch.nn as nn
 from fvcore.nn import FlopCountAnalysis, flop_count_table
 
 from torchcl.models import ModelWrapper
-from torchcl.data.transforms.base_transform import BaseTransform
+from torchcl.data.transforms import BaseTransform
 from torchcl.utils import get_optimizer
 
 
@@ -107,7 +107,7 @@ class BaseMethod(nn.Module):
     def observe(self, data: Dict[str, torch.Tensor]):
         raise NotImplementedError
 
-    def predict(self, data: torch.Tensor) -> torch.Tensor:
+    def predict(self, data: Dict[str, torch.Tensor]) -> torch.Tensor:
         return self.model(data['x'], data['t'])
 
     def on_task_start(self):

@@ -69,5 +69,6 @@ def get_dataset(config, *args, **kwargs):
 # import_all_modules(FILE_ROOT, "torchcl.data")
 
 # import transforms 
+from .buffer import Buffer
 from .helper import get_loaders_and_transforms
 from .cifar import CIFAR10, CIFAR100
