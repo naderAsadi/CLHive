@@ -24,6 +24,9 @@ class FineTuning(BaseMethod):
             data['t'] = 0
 
         pred = self.model(aug_data, data['t'])
+
+        if self.config.train.scenario == 'multi_head':
+            data['y'] -= self.config.data.n_classes_per_task * data['t']
         loss = self.loss(pred, data['y'])
 
         self.update(loss)

@@ -76,6 +76,41 @@ class ProbeEvaluator(Evaluator):
 
                     print(f"Linear head {task_t} | Epoch: {epoch + 1} / {self.config.eval.n_epochs} - Training loss: {loss}", end='\r')
 
+    @torch.no_grad()
+    def _evaluate(self, task_id: int):
+        self.agent.eval()
+
+        accs = np.zeros(shape=(self.config.data.n_tasks,))
+
+        for task_t in range(task_id + 1):
+
+            n_ok, n_total = 0, 0
+            self.test_loader.sampler.set_task(task_t)
+
+            # iterate over samples from task
+            for i, (data, target) in enumerate(self.test_loader):
+
+                data, target = data.to(self.device), target.to(self.device)
+                
+                probe_id = task_id
+                if self.config.eval.scenario == 'multi_head':
+                    target = target - task_t * self.config.data.n_classes_per_task
+                    probe_id = task_t
+               
+                features = self.agent.model.forward_model(data)
+                logits = self.linear_heads[str(probe_id)](features)
+
+                n_total += data.size(0)
+                if logits is not None:
+                    pred   = logits.max(1)[1]
+                    n_ok   += pred.eq(target).sum().item()
+
+            accs[task_t] = (n_ok / n_total) * 100
+        
+        avg_acc = np.mean(accs[:task_id + 1])
+        print('\n', '\t'.join([str(int(x)) for x in accs]), f'\tAvg Acc: {avg_acc:.2f}')
+
+
     def fit(self, task_id: int = None):            
         
         if task_id is None:
