@@ -43,7 +43,7 @@ config:
 
   data:
     dataset: cifar10
-    root: ../cl-datasets/data/
+    root: ../datasets/cl-datasets/data/
     image_size: ???
     n_tasks: ???
     n_classes: ???

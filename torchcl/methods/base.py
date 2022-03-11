@@ -108,6 +108,8 @@ class BaseMethod(nn.Module):
         raise NotImplementedError
 
     def predict(self, data, task_id) -> torch.Tensor:
+        if self.config.eval.scenario == 'single_head':
+            task_id = 0
         return self.model(data, task_id)
 
     def on_task_start(self):

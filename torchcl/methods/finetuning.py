@@ -20,6 +20,9 @@ class FineTuning(BaseMethod):
     def observe(self, data):
         aug_data = self.transform(data['x'])
 
+        if self.config.train.scenario == 'single_head':
+            data['t'] = 0
+
         pred = self.model(aug_data, data['t'])
         loss = self.loss(pred, data['y'])
 

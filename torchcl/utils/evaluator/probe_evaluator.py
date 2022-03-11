@@ -30,14 +30,16 @@ class ProbeEvaluator(Evaluator):
         self.train_loader = train_loader
         self.linear_heads = {}
 
-    def _train_linear_heads(self, task_list):
+    def _train_linear_heads(self, task_id):
 
         if self.config.eval.scenario == 'multi_head':
-            probe_n_classes = self.config.data.n_classes_per_task * (task_list[0] + 1)
+            probe_n_classes = self.config.data.n_classes_per_task * (task_id + 1)
             sample_all_seen_tasks = False
+            task_list = [*range(task_id + 1)]
         else:
             probe_n_classes = self.config.data.n_classes
             sample_all_seen_tasks = True
+            task_list = [task_id]
 
         self.linear_heads = {
             str(t) : LinearClassifier(
@@ -49,10 +51,12 @@ class ProbeEvaluator(Evaluator):
 
         for task_t in task_list:
             self.train_loader.sampler.set_task(task_t, sample_all_seen_tasks=sample_all_seen_tasks)
-            optim = torch.optim.SGD(self.linear_heads[str(task_t)].parameters(), 
-                                    lr=self.config.train.optim.lr,
-                                    momentum=0.9,
-                                    weight_decay=0.)
+            optim = torch.optim.SGD(
+                self.linear_heads[str(task_t)].parameters(), 
+                lr=self.config.train.optim.lr,
+                momentum=0.9,
+                weight_decay=0.
+            )
             
             for epoch in range(self.config.eval.n_epochs):
                 for _, (x, y) in enumerate(self.train_loader):
@@ -72,11 +76,9 @@ class ProbeEvaluator(Evaluator):
 
                     print(f"Linear head {task_t} | Epoch: {epoch + 1} / {self.config.eval.n_epochs} - Training loss: {loss}", end='\r')
 
-    def fit(self, task_id: int):
-        if self.config.eval.scenario == 'multi_head':
-            task_list = [*range(task)]
-        else:
-            task_list = [task_id]
-
-        self._train_linear_heads(task_list)
+    def fit(self, task_id: int = None):            
+        
+        if task_id is None:
+            task_id = self.config.data.n_tasks - 1
+        self._train_linear_heads(task_id)
         self._evaluate(task_id)
