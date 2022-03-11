@@ -4,13 +4,11 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List
 
 import torchvision.transforms as pth_transforms
-import torchvision.transforms._transforms_video as pth_transforms_video
 
 from torchcl.utils.registry_utils import import_all_modules
 
 
 FILE_ROOT = Path(__file__).parent
-print(FILE_ROOT)
 
 TRANSFORM_REGISTRY = {}
 TRANSFORM_REGISTRY_TB = {}
@@ -33,7 +31,7 @@ def register_transform(name: str, bypass_checks=False):
             if name in TRANSFORM_REGISTRY:
                 msg = "Cannot register duplicate transform ({}). Already registered at \n{}\n"
                 raise ValueError(msg.format(name, TRANSFORM_REGISTRY_TB[name]))
-            if hasattr(pth_transforms, name) or hasattr(pth_transforms_video, name):
+            if hasattr(pth_transforms, name):
                 raise ValueError(
                     "{} has existed in torchvision.transforms, Please change the name!".format(
                         name
@@ -78,16 +76,13 @@ def get_transform(transform_config: Dict[str, Any]) -> Callable:
         # the name should be available in torchvision.transforms
         # if users specify the torchvision transform name in snake case,
         # we need to convert it to title case.
-        if not (hasattr(pth_transforms, name) or hasattr(pth_transforms_video, name)):
+        if not (hasattr(pth_transforms, name)):
             name = name.title().replace("_", "")
-        assert hasattr(pth_transforms, name) or hasattr(pth_transforms_video, name), (
+        assert hasattr(pth_transforms, name), (
             f"{name} isn't a registered tranform"
             ", nor is it available in torchvision.transforms"
         )
-        if hasattr(pth_transforms, name):
-            transform = getattr(pth_transforms, name)(**transform_args)
-        else:
-            transform = getattr(pth_transforms_video, name)(**transform_args)
+        transform = getattr(pth_transforms, name)(**transform_args)
 
     return transform
 

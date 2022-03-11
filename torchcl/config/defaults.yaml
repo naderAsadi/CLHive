@@ -42,7 +42,7 @@ config:
       lr: 0.01
 
   data:
-    dataset: seq_mnist
+    dataset: cifar10
     root: ../cl-datasets/data/
     image_size: ???
     n_tasks: ???
