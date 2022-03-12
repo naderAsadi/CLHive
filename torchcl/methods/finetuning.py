@@ -20,13 +20,11 @@ class FineTuning(BaseMethod):
     def observe(self, data):
         aug_data = self.transform(data['x'])
 
+        # TODO: move forward to a separate method in base method or model_wrapper
         if self.config.train.scenario == 'single_head':
             data['t'] = 0
 
         pred = self.model(aug_data, data['t'])
-
-        if self.config.train.scenario == 'multi_head':
-            data['y'] -= self.config.data.n_classes_per_task * data['t']
         loss = self.loss(pred, data['y'])
 
         self.update(loss)

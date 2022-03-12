@@ -63,7 +63,7 @@ class ProbeEvaluator(Evaluator):
                     x, y = x.to(self.device), y.to(self.device)
 
                     if self.config.eval.scenario == 'multi_head':
-                        y = y - task_t * self.config.data.n_classes_per_task
+                        y -= y.min()
 
                     with torch.no_grad():
                         features = self.agent.model.forward_model(x)

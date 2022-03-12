@@ -44,6 +44,9 @@ class Trainer:
 
             for idx, (data, targets) in enumerate(self.loader):
 
+                if self.config.train.scenario == 'multi_head':
+                    targets -= targets.min()
+
                 inc_data = {
                     'x': data.to(self.device), 
                     'y': targets.to(self.device), 
