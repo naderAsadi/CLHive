@@ -41,7 +41,7 @@ class Evaluator:
             self.test_loader.sampler.set_task(task_t)
 
             # iterate over samples from task
-            for i, (data, target) in enumerate(self.test_loader):
+            for i, (data, target, task) in enumerate(self.test_loader):
 
                 data, target = data.to(self.device), target.to(self.device)
                 

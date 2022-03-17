@@ -61,6 +61,7 @@ class ContinualSampler(Sampler):
 
     def set_task(self, task_id: int, sample_all_seen_tasks: bool = False):
         self._current_task = task_id
+        self.ds._set_task(task_id)
         self.sample_all_seen_tasks = sample_all_seen_tasks
 
     def _fetch_task_samples(self, task_id):

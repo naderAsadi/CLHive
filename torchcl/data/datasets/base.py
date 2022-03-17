@@ -21,6 +21,7 @@ class BaseDataset:
 
         self.dataset = dataset
         self.transform = transform
+        self._current_task = 0
     
     @classmethod
     def from_config(cls, config: Dict[str, Any]) -> "BaseDataset":
@@ -32,6 +33,9 @@ class BaseDataset:
 
         raise NotImplementedError
 
+    def _set_task(self, task_id: int):
+        self._current_task = task_id
+
     def __getitem__(self, index: int):
         assert index >= 0 and index < len(self.dataset), (
             f"Provided index ({index}) is outside of dataset range."
@@ -40,7 +44,7 @@ class BaseDataset:
         data, targets = sample
         if self.transform is not None:
             data = self.transform(data)
-        return data, targets
+        return data, targets, self._current_task
     
     def __len__(self):
         return len(self.dataset)

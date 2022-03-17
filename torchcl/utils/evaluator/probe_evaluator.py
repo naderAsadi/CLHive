@@ -59,7 +59,7 @@ class ProbeEvaluator(Evaluator):
             )
             
             for epoch in range(self.config.eval.n_epochs):
-                for _, (x, y) in enumerate(self.train_loader):
+                for _, (x, y, t) in enumerate(self.train_loader):
                     x, y = x.to(self.device), y.to(self.device)
 
                     if self.config.eval.scenario == 'multi_head':
@@ -88,7 +88,7 @@ class ProbeEvaluator(Evaluator):
             self.test_loader.sampler.set_task(task_t)
 
             # iterate over samples from task
-            for i, (data, target) in enumerate(self.test_loader):
+            for i, (data, target, task) in enumerate(self.test_loader):
 
                 data, target = data.to(self.device), target.to(self.device)
                 

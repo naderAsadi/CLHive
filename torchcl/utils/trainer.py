@@ -42,15 +42,14 @@ class Trainer:
         for epoch in range(self.config.train.n_epochs):
             # adjust learning rate
 
-            for idx, (data, targets) in enumerate(self.loader):
-
+            for idx, (data, targets, task) in enumerate(self.loader):
                 if self.config.train.scenario == 'multi_head':
                     targets -= targets.min()
 
                 inc_data = {
                     'x': data.to(self.device), 
                     'y': targets.to(self.device), 
-                    't': task_id
+                    't': task
                 }
                 loss = self.agent.observe(inc_data)
 
