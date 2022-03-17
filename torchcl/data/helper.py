@@ -5,8 +5,8 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader, Subset
 
-from . import get_dataset
-from torchcl.data.base import BaseDataset
+from torchcl.data.datasets import get_dataset
+from torchcl.data.datasets.base import BaseDataset
 from torchcl.data.transforms import BaseTransform, get_transform
 from torchcl.data.samplers import ContinualSampler
 

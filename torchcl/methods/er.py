@@ -19,5 +19,15 @@ class ER(BaseMethod):
     def name(self):
         return 'er'
 
+    
+
+    def process_inc(self, data):
+        aug_data = self.transform(data['x'])
+
+        pred = self.model(aug_data, data['t'])
+        loss = self.loss(pred, data['y'])
+
+        return loss
+
     def observe(self, data):
         pass

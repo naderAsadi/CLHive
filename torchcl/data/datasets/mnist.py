@@ -3,8 +3,8 @@ from PIL import Image
 
 from torchvision.datasets.mnist import MNIST
 
-from torchcl.data import register_dataset
-from torchcl.data.base import BaseDataset
+from torchcl.data.datasets import register_dataset
+from torchcl.data.datasets.base import BaseDataset
 from torchcl.data.transforms import get_transform, BaseTransform
 
 
