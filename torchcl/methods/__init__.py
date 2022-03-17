@@ -73,3 +73,4 @@ def get_method(config: Dict[str, Any], *args, **kwargs):
 import_all_modules(FILE_ROOT, "torchcl.methods")
 
 from .finetuning import FineTuning
+from .er import ER

@@ -10,11 +10,11 @@ def normalize(x):
     x_normalized = x.div(x_norm + 0.00001)
     return x_normalized
 
-def add_linear(dim_in: int, dim_out: int, batch_norm: bool, relu: bool):
+def add_linear(in_dim: int, out_dim: int, batch_norm: bool, relu: bool):
     layers = []
-    layers.append(nn.Linear(dim_in, dim_out))
+    layers.append(nn.Linear(in_dim, out_dim))
     if batch_norm:
-        layers.append(nn.BatchNorm1d(dim_out))
+        layers.append(nn.BatchNorm1d(out_dim))
     if relu:
         layers.append(nn.ReLU(inplace=True))
 
@@ -25,7 +25,7 @@ def add_linear(dim_in: int, dim_out: int, batch_norm: bool, relu: bool):
 class LinearClassifier(BaseHead):
     """Linear classifier"""
     def __init__(self, feature_dim, n_classes):
-        super(LinearClassifier, self).__init__()
+        super(LinearClassifier, self).__init__(feature_dim, n_classes)
         self.fc = nn.Linear(feature_dim, n_classes)
 
     def forward(self, features):
@@ -34,9 +34,9 @@ class LinearClassifier(BaseHead):
 
 @register_head("distlinear")
 class DistLinear(BaseHead):
-    def __init__(self, indim, outdim, weight=None):
-        super(DistLinear, self).__init__()
-        self.L = nn.Linear( indim, outdim, bias = False)
+    def __init__(self, in_dim, out_dim, weight=None):
+        super(DistLinear, self).__init__(in_dim, out_dim)
+        self.L = nn.Linear( in_dim, out_dim, bias = False)
         if weight is not None:
             self.L.weight.data = Variable(weight)
 
@@ -60,32 +60,32 @@ class DistLinear(BaseHead):
 class ProjectionMLP(BaseHead):
     def __init__(
         self, 
-        dim_in: int, 
+        in_dim: int, 
         hidden_dim: int, 
-        feature_dim: int, 
+        out_dim: int, 
         num_layers: int = 2,
         batch_norm: bool = False
     ) -> None:
         """[summary]
 
         Args:
-            dim_in (int): [description]
+            in_dim (int): [description]
             hidden_dim (int): [description]
-            feature_dim (int): [description]
+            out_dim (int): [description]
             num_layers (int, optional): [description]. Defaults to 2.
             batch_norm (bool, optional): [description]. Defaults to False.
         """
 
-        super(ProjectionMLP, self).__init__()
-        self.layers = self._make_layers(dim_in, hidden_dim, feature_dim, num_layers, batch_norm)
+        super(ProjectionMLP, self).__init__(in_dim, out_dim)
+        self.layers = self._make_layers(in_dim, hidden_dim, out_dim, num_layers, batch_norm)
 
-    def _make_layers(self, dim_in, hidden_dim, feature_dim, num_layers, batch_norm):
-        dims = [dim_in] + num_layers * [hidden_dim] + [feature_dim]
+    def _make_layers(self, in_dim, hidden_dim, out_dim, num_layers, batch_norm):
+        dims = [in_dim] + num_layers * [hidden_dim] + [out_dim]
         layers = []
         for i in range(len(dims)):
             layers.append(add_linear(
-                dim_in = dims[i], 
-                dim_out = dims[i + 1], 
+                in_dim = dims[i], 
+                out_dim = dims[i + 1], 
                 batch_norm = batch_norm, 
                 relu = (i < len(dims) - 2))
             )

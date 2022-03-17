@@ -14,8 +14,11 @@ class BaseHead(nn.Module):
     within a :class:`models.ClassyModel`.
     """
 
-    def __init__(self):
+    def __init__(self, in_dim, out_dim):
         super().__init__()
+
+        self.in_dim = in_dim
+        self.out_dim = out_dim
     
     @classmethod
     def from_config(cls, config: Dict[str, Any]) -> "BaseHead":
