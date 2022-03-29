@@ -6,7 +6,7 @@
 Here is a reference to what each emoji in the commits means:
 
 * 📎 : Some basic updates.
-* ♻️ : Refactoring.
-* 💩 : Poopy code, needs to be revised!
-* 🐛 : Bug fix.
-* 💡 : New feature.
+* ♻️ : Refactoring. (:recycle:)
+* 💩 : Poopy code, needs to be revised! (:poop:)
+* 🔧 : Bug fix. (:wrench:)
+* 💡 : New feature. (:bulb:)
