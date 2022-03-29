@@ -8,5 +8,5 @@ Here is a reference to what each emoji in the commits means:
 * 📎 : Some basic updates.
 * ♻️ : Refactoring.
 * 💩 : Poopy code, needs to be revised!
-* 🔧 : Bug fix.
+* 🐛 : Bug fix.
 * 💡 : New feature.
