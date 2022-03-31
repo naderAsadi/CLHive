@@ -61,6 +61,9 @@ class Trainer:
     def configure_optimizer(self):
         pass
 
+    def set_evaluator(self, evaluator):
+        self.evaluator = evaluator
+
     def on_task_end(self):
 
         finished_task_id = self.agent._current_task_id
