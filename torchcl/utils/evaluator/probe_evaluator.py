@@ -53,7 +53,7 @@ class ProbeEvaluator(Evaluator):
             self.train_loader.sampler.set_task(task_t, sample_all_seen_tasks=sample_all_seen_tasks)
             optim = torch.optim.SGD(
                 self.linear_heads[str(task_t)].parameters(), 
-                lr=self.config.train.optim.lr,
+                lr=self.config.optim.lr,
                 momentum=0.9,
                 weight_decay=0.
             )

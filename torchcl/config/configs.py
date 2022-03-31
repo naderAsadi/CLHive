@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from hydra.core.config_store import ConfigStore
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 
 @dataclass
@@ -13,6 +13,9 @@ class DataConfig:
     smooth: Optional[bool] = False
     n_workers: Optional[int] = 0
     transform: Optional[str] = "base"
+    image_size: Optional[Tuple] = (3, 32, 32)
+    n_classes: Optional[int] = 10
+    n_classes_per_task: Optional[int] = 2
 
 
 @dataclass

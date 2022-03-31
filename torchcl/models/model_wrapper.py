@@ -25,7 +25,8 @@ class ModelWrapper(nn.Module):
     def __init__(
         self, 
         model: nn.Module, 
-        heads: nn.ModuleDict
+        heads: nn.ModuleDict,
+        scenario: str = 'single_head',
     ) -> None:
         """[summary]
 
@@ -37,7 +38,12 @@ class ModelWrapper(nn.Module):
         super(ModelWrapper, self).__init__()
         self._model = model
         self._heads = heads
-        self._pred_dim = list(self._heads.values())[0].out_dim
+        self._scenario = scenario
+
+        if self._scenario is 'single_head':
+            self._pred_dim = self._heads.out_dim
+        else:
+            self._pred_dim = list(self._heads.values())[0].out_dim
     
     @classmethod
     def from_config(cls, config: Dict[str, Any], *args, **kwargs) -> "ModelWrapper":
@@ -62,8 +68,8 @@ class ModelWrapper(nn.Module):
         return self._model(x)
 
     def forward_head(self, x, task: int):
-        if isinstance(task, int):
-            return self._heads[str(task)](x)
+        if self._scenario is 'single_head':
+            return self._heads(x)
         
         pred = torch.zeros(x.size(0), self._pred_dim).to(x.get_device())
         tasks = task.unique().tolist()
@@ -76,9 +82,10 @@ class ModelWrapper(nn.Module):
         """
         Perform computation of blocks in the order define in get_blocks.
         """
-        assert task not in self._heads.keys(), (
-            f"{task} does not exist in {self._heads.keys()}"
-        )
+        if self._scenario is not 'single_head':
+            assert task not in self._heads.keys(), (
+                f"{task} does not exist in {self._heads.keys()}"
+            )
 
         x = self.forward_model(x)
         x = self.forward_head(x, task)

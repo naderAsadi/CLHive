@@ -51,7 +51,7 @@ def get_loaders_and_transforms(config: Dict[str, Any]):
     """
 
     base_transform = BaseTransform()
-    train_transform = get_transform(transform_config=config.data.transform)
+    train_transform = get_transform(transform_name=config.data.transform)
 
     val_set = val_loader = None
     train_set = get_dataset(config.data, train = True)

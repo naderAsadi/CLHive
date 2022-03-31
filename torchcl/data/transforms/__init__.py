@@ -45,8 +45,8 @@ def register_transform(name: str, bypass_checks=False):
     return register_transform_cls
 
 
-def get_transform(transform_config: Dict[str, Any]) -> Callable:
-    """Builds a :class:`BaseTransform` from a config.
+def get_transform(transform_name: str) -> Callable:
+    """Builds a :class:`BaseTransform` from transform name.
 
     This assumes a 'name' key in the config which is used to determine what
     transform class to instantiate. For instance, a config `{"name":
@@ -63,35 +63,22 @@ def get_transform(transform_config: Dict[str, Any]) -> Callable:
     .. code-block:: python
       get_transform({"name": "CenterCrop", "size": 224})
     """
-    assert (
-        "name" in transform_config
-    ), f"name not provided for transform: {transform_config}"
-    name = transform_config["name"]
 
-    transform_args = {k: v for k, v in transform_config.items() if k != "name"}
-
-    if name in TRANSFORM_REGISTRY:
-        transform = TRANSFORM_REGISTRY[name].from_config(transform_args)
+    if transform_name in TRANSFORM_REGISTRY:
+        transform = TRANSFORM_REGISTRY[transform_name]()
     else:
         # the name should be available in torchvision.transforms
         # if users specify the torchvision transform name in snake case,
         # we need to convert it to title case.
-        if not (hasattr(pth_transforms, name)):
-            name = name.title().replace("_", "")
-        assert hasattr(pth_transforms, name), (
+        if not (hasattr(pth_transforms, transform_name)):
+            transform_name = transform_name.title().replace("_", "")
+        assert hasattr(pth_transforms, transform_name), (
             f"{name} isn't a registered tranform"
             ", nor is it available in torchvision.transforms"
         )
-        transform = getattr(pth_transforms, name)(**transform_args)
+        transform = getattr(pth_transforms, name)()
 
     return transform
-
-def get_transforms(transforms_config: List[Dict[str, Any]]) -> Callable:
-    """
-    Builds a transform from the list of transform configurations.
-    """
-    transform_list = [get_transform(config) for config in transforms_config]
-    return pth_transforms.Compose(transform_list)
 
 
 # automatically import any Python files in the transforms/ directory

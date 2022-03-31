@@ -140,30 +140,30 @@ class ResNet(nn.Module):
 
 @register_model("resnet18")
 class ResNet18(ModelWrapper):
-    def __init__(self, heads: nn.ModuleDict, **kwargs):
+    def __init__(self, heads: nn.ModuleDict, scenario: str, **kwargs):
         model = ResNet(BasicBlock, [2, 2, 2, 2], **kwargs)
-        super().__init__(model=model, heads=heads)
+        super().__init__(model=model, heads=heads, scenario=scenario)
     
 
 @register_model("resnet34")
 class ResNet34(ModelWrapper):
-    def __init__(self, heads: nn.ModuleDict, **kwargs):
+    def __init__(self, heads: nn.ModuleDict, scenario: str, **kwargs):
         model = ResNet(BasicBlock, [3, 4, 6, 3], **kwargs)
-        super().__init__(model=model, heads=heads)
+        super().__init__(model=model, heads=heads, scenario=scenario)
 
 
 @register_model("resnet50")
 class ResNet50(ModelWrapper):
-    def __init__(self, heads: nn.ModuleDict, **kwargs):
+    def __init__(self, heads: nn.ModuleDict, scenario: str, **kwargs):
         model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
-        super().__init__(model=model, heads=heads)
+        super().__init__(model=model, heads=heads, scenario=scenario)
 
 
 @register_model("resnet101")
 class ResNet101(ModelWrapper):
-    def __init__(self, heads: nn.ModuleDict, **kwargs):
+    def __init__(self, heads: nn.ModuleDict, scenario: str, **kwargs):
         model = ResNet(Bottleneck, [3, 4, 23, 3], **kwargs)
-        super().__init__(model=model, heads=heads)
+        super().__init__(model=model, heads=heads, scenario=scenario)
 
 
 # model_dict = {

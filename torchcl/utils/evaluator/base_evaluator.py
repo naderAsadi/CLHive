@@ -45,7 +45,7 @@ class Evaluator:
 
                 data, target = data.to(self.device), target.to(self.device)
                 
-                if self.config.eval.scenario == 'multi_head':
+                if self.config.eval.scenario is 'multi_head':
                     target-= target.min()
                
                 logits = self.agent.predict(data=data, task_id=task_t)
