@@ -1,5 +1,5 @@
 # Overview
-**CLHive** is a library on top of [PyTorch](https://pytorch.org) and [PyTorch Lightning](https://www.pytorchlightning.ai/) for Continual Learning research.
+**CLHive** is a codebase on top of [PyTorch](https://pytorch.org) for Continual Learning research. It provides the components necessary to run CL experiments, for both task-incremental and class-incremental settings. It is designed to be readable and easily extensible, to allow users to quickly run and experiment with their own ideas.
 
 
 ## Reading The Commits
