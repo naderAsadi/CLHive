@@ -12,20 +12,20 @@ class CIFARDataset(BaseDataset):
     _CIFAR_TYPE = None
     _DEFAULT_N_TASKS = None
     _MEAN = (0.4914, 0.4822, 0.4465)
-    _STD  = (0.2023, 0.1994, 0.2010)
+    _STD = (0.2023, 0.1994, 0.2010)
     _IMAGE_SIZE = 32
 
     def __init__(
         self,
-        root: str, 
+        root: str,
         transform: Optional[Union[BaseTransform, Callable]],
         train: bool,
-        download: bool = True
+        download: bool = True,
     ) -> None:
 
         assert self._CIFAR_TYPE in [
             "cifar10",
-            "cifar100"
+            "cifar100",
         ], "CIFARDataset must be subclassed and a valid _CIFAR_TYPE provided"
 
         if self._CIFAR_TYPE == "cifar10":
@@ -36,9 +36,7 @@ class CIFARDataset(BaseDataset):
         if transform is None:
             transform = BaseTransform(mean=CIFARDataset._MEAN, std=CIFARDataset._STD)
 
-        super().__init__(
-            dataset=dataset, transform=transform
-        )
+        super().__init__(dataset=dataset, transform=transform)
 
     @classmethod
     def from_config(cls, config: Dict[str, Any], train: bool) -> "CIFARDataset":
@@ -49,19 +47,14 @@ class CIFARDataset(BaseDataset):
         Returns:
             A CIFARDataset instance.
         """
-        
+
         root = config.get("root")
         train = train
         transform_config = config.get("transform")
         download = config.get("download")
 
         transform = get_transform(transform_config)
-        return cls(
-            root=root, 
-            transform=transform,
-            train=train,
-            download=True
-        )
+        return cls(root=root, transform=transform, train=train, download=True)
 
 
 @register_dataset("cifar10")

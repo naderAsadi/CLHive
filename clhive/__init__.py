@@ -1,4 +1,4 @@
-from clhive import config, data, meters, methods, models, utils
+from clhive import config, data, methods, models, utils
 
 from clhive.config import config_parser
 from clhive.data import get_dataset, get_loaders_and_transforms

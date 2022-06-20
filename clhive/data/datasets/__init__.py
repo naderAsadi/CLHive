@@ -68,6 +68,6 @@ def get_dataset(config, *args, **kwargs):
 # automatically import any Python files in the data/ directory
 import_all_modules(FILE_ROOT, "clhive.data.datasets")
 
-# import transforms 
+# import transforms
 from .cifar import CIFAR10, CIFAR100
 from .mnist import MNISTDataset

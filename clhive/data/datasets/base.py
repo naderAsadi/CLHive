@@ -4,11 +4,8 @@ from ..transforms.base_transform import BaseTransform
 
 
 class BaseDataset:
-
     def __init__(
-        self,
-        dataset: Sequence,
-        transform: Optional[Union[BaseTransform, Callable]]
+        self, dataset: Sequence, transform: Optional[Union[BaseTransform, Callable]]
     ) -> None:
         """Constructor for BaseDataset
 
@@ -22,7 +19,7 @@ class BaseDataset:
         self.dataset = dataset
         self.transform = transform
         self._current_task = 0
-    
+
     @classmethod
     def from_config(cls, config: Dict[str, Any]) -> "BaseDataset":
         """Instantiates a Dataset from a configuration.
@@ -37,14 +34,14 @@ class BaseDataset:
         self._current_task = task_id
 
     def __getitem__(self, index: int):
-        assert index >= 0 and index < len(self.dataset), (
-            f"Provided index ({index}) is outside of dataset range."
-        )
+        assert index >= 0 and index < len(
+            self.dataset
+        ), f"Provided index ({index}) is outside of dataset range."
         sample = self.dataset[index]
         data, targets = sample
         if self.transform is not None:
             data = self.transform(data)
         return data, targets, self._current_task
-    
+
     def __len__(self):
         return len(self.dataset)

@@ -16,6 +16,7 @@ METHOD_CLASS_NAMES = set()
 METHOD_REGISTRY_TB = {}
 METHOD_CLASS_NAMES_TB = {}
 
+
 def register_method(name, bypass_checks=False):
     """Register a :class:`BaseMethod` subclass.
 
@@ -48,8 +49,9 @@ def register_method(name, bypass_checks=False):
         METHOD_REGISTRY_TB[name] = tb
         METHOD_CLASS_NAMES_TB[cls.__name__] = tb
         return cls
-    
+
     return register_method_cls
+
 
 def get_method(config: Dict[str, Any], *args, **kwargs):
     """Builds a method from a config.

@@ -19,10 +19,7 @@ class BaseTransform(nn.Module):
         if (mean is not None) and (std is not None):
             self.normalize = transforms.Normalize(mean, std)
 
-        self.tfs = transforms.Compose([
-            transforms.ToTensor(),
-            self.normalize,
-        ])
+        self.tfs = transforms.Compose([transforms.ToTensor(), self.normalize,])
 
     def __call__(self, input):
         """

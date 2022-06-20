@@ -6,6 +6,7 @@ import torch
 import torch.nn as nn
 from fvcore.nn import FlopCountAnalysis, flop_count_table
 
+from ..config import Config
 from ..models import ModelWrapper
 from ..data.transforms import BaseTransform
 from ..utils import get_optimizer
@@ -18,11 +19,11 @@ class BaseMethod(nn.Module):
 
     def __init__(
         self,
-        config,
-        model : ModelWrapper,
-        logger,
-        transform: BaseTransform = BaseTransform,
-        optim: torch.optim = None,
+        model: ModelWrapper,
+        n_tasks: int,
+        logger=None,
+        transform: Optional[BaseTransform] = BaseTransform,
+        optim: Optional[torch.optim] = None,
     ) -> None:
 
         super(BaseMethod, self).__init__()
@@ -30,7 +31,7 @@ class BaseMethod(nn.Module):
         self.model = model
         self.logger = logger
         self.transform = transform
-        self.config = config
+        self.n_tasks = n_tasks
 
         if optim is None:
             optim = get_optimizer(self.config)
@@ -39,7 +40,6 @@ class BaseMethod(nn.Module):
         self._model_history = {}
         self._current_task_id = 0
 
-    
     @property
     def name(self):
         raise NotImplementedError
@@ -52,14 +52,20 @@ class BaseMethod(nn.Module):
     def one_sample_flop(self):
         """[summary]
         """
-        if not hasattr(self, '_train_cost'):
-            input = torch.FloatTensor(size=(1,) + self.config.input_size).to(self.device)
+        if not hasattr(self, "_train_cost"):
+            input = torch.FloatTensor(size=(1,) + self.config.input_size).to(
+                self.device
+            )
             flops = FlopCountAnalysis(self.model, input)
-            self._train_cost = flops.total() / 1e6 # MegaFlops
+            self._train_cost = flops.total() / 1e6  # MegaFlops
             self._train_flop_table = flop_count_table(flops)
 
         return self._train_cost, self._train_flop_table
-    
+
+    @classmethod
+    def from_config(cls, config: Config) -> "BaseMethod":
+        pass
+
     def get_model(self, task_id: int = None):
         """[summary]
 
@@ -72,9 +78,9 @@ class BaseMethod(nn.Module):
         if (task_id is None) or (task_id == self._current_task_id):
             return self.model
 
-        assert str(task_id) in self._model_history.keys(), (
-            f"No trained model is available for task {task_id}."
-        )
+        assert (
+            str(task_id) in self._model_history.keys()
+        ), f"No trained model is available for task {task_id}."
         return self._model_history[str(task_id)]
 
     def set_model(self, model: ModelWrapper, task_id: int):
@@ -84,9 +90,7 @@ class BaseMethod(nn.Module):
             model (ModelWrapper): [description]
             task_id (int): [description]
         """
-        assert model is not None, (
-            "Input model cannot be None."
-        )
+        assert model is not None, "Input model cannot be None."
 
         if (task_id is None) or (task_id == self._current_task_id):
             self.model = model
@@ -95,10 +99,10 @@ class BaseMethod(nn.Module):
 
     def train(self):
         self.model.train()
-    
+
     def eval(self):
         self.model.eval()
-    
+
     def update(self, loss):
         self.optim.zero_grad()
         loss.backward()
@@ -107,8 +111,8 @@ class BaseMethod(nn.Module):
     def observe(self, data: Dict[str, torch.Tensor]):
         raise NotImplementedError
 
-    def predict(self, data, task_id) -> torch.Tensor:
-        if self.config.eval.scenario == 'single_head':
+    def predict(self, data, task_id: Optional[int] = None) -> torch.Tensor:
+        if task_id is None:
             task_id = 0
         return self.model(data, task_id)
 
@@ -120,8 +124,4 @@ class BaseMethod(nn.Module):
         """
         # save snapshots and other stuff
 
-        self._current_task_id = min(self._current_task_id + 1, self.config.data.n_tasks - 1)
-
-
-
-    
+        self._current_task_id = min(self._current_task_id + 1, self.n_tasks - 1)

@@ -5,9 +5,9 @@ import torch
 from . import register_method, BaseMethod
 from ..data.transforms import BaseTransform
 
+
 @register_method("finetuning")
 class FineTuning(BaseMethod):
-
     def __init__(self, config, model, logger, transform, optim) -> None:
         super().__init__(config, model, logger, transform, optim)
 
@@ -18,10 +18,10 @@ class FineTuning(BaseMethod):
         return "finetuning"
 
     def observe(self, data):
-        aug_data = self.transform(data['x'])
+        aug_data = self.transform(data["x"])
 
-        pred = self.model(aug_data, data['t'])
-        loss = self.loss(pred, data['y'])
+        pred = self.model(aug_data, data["t"])
+        loss = self.loss(pred, data["y"])
 
         self.update(loss)
 

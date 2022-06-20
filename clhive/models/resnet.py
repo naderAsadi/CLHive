@@ -13,16 +13,26 @@ class BasicBlock(nn.Module):
     def __init__(self, in_planes, planes, stride=1, is_last=False):
         super(BasicBlock, self).__init__()
         self.is_last = is_last
-        self.conv1 = nn.Conv2d(in_planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
+        self.conv1 = nn.Conv2d(
+            in_planes, planes, kernel_size=3, stride=stride, padding=1, bias=False
+        )
         self.bn1 = nn.BatchNorm2d(planes)
-        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=1, padding=1, bias=False)
+        self.conv2 = nn.Conv2d(
+            planes, planes, kernel_size=3, stride=1, padding=1, bias=False
+        )
         self.bn2 = nn.BatchNorm2d(planes)
 
         self.shortcut = nn.Sequential()
         if stride != 1 or in_planes != self.expansion * planes:
             self.shortcut = nn.Sequential(
-                nn.Conv2d(in_planes, self.expansion * planes, kernel_size=1, stride=stride, bias=False),
-                nn.BatchNorm2d(self.expansion * planes)
+                nn.Conv2d(
+                    in_planes,
+                    self.expansion * planes,
+                    kernel_size=1,
+                    stride=stride,
+                    bias=False,
+                ),
+                nn.BatchNorm2d(self.expansion * planes),
             )
 
     def forward(self, x):
@@ -45,16 +55,26 @@ class Bottleneck(nn.Module):
         self.is_last = is_last
         self.conv1 = nn.Conv2d(in_planes, planes, kernel_size=1, bias=False)
         self.bn1 = nn.BatchNorm2d(planes)
-        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
+        self.conv2 = nn.Conv2d(
+            planes, planes, kernel_size=3, stride=stride, padding=1, bias=False
+        )
         self.bn2 = nn.BatchNorm2d(planes)
-        self.conv3 = nn.Conv2d(planes, self.expansion * planes, kernel_size=1, bias=False)
+        self.conv3 = nn.Conv2d(
+            planes, self.expansion * planes, kernel_size=1, bias=False
+        )
         self.bn3 = nn.BatchNorm2d(self.expansion * planes)
 
         self.shortcut = nn.Sequential()
         if stride != 1 or in_planes != self.expansion * planes:
             self.shortcut = nn.Sequential(
-                nn.Conv2d(in_planes, self.expansion * planes, kernel_size=1, stride=stride, bias=False),
-                nn.BatchNorm2d(self.expansion * planes)
+                nn.Conv2d(
+                    in_planes,
+                    self.expansion * planes,
+                    kernel_size=1,
+                    stride=stride,
+                    bias=False,
+                ),
+                nn.BatchNorm2d(self.expansion * planes),
             )
 
     def forward(self, x):
@@ -71,7 +91,9 @@ class Bottleneck(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self, block, num_blocks, nf, input_size, in_channel=3, zero_init_residual=False):
+    def __init__(
+        self, block, num_blocks, nf, input_size, in_channel=3, zero_init_residual=False
+    ):
         super(ResNet, self).__init__()
 
         self.in_planes = nf
@@ -81,8 +103,9 @@ class ResNet(nn.Module):
         self.last_hid = nf * 8 * block.expansion
         # self.last_hid = last_hid * (input_size[-1] // 2 // 2 // 2 // 4) ** 2
 
-        self.conv1 = nn.Conv2d(in_channel, nf, kernel_size=3, stride=1, padding=1,
-                               bias=False)
+        self.conv1 = nn.Conv2d(
+            in_channel, nf, kernel_size=3, stride=1, padding=1, bias=False
+        )
         self.bn1 = nn.BatchNorm2d(nf)
         self.layer1 = self._make_layer(block, 1 * nf, num_blocks[0], stride=1)
         self.layer2 = self._make_layer(block, 2 * nf, num_blocks[1], stride=2)
@@ -90,10 +113,9 @@ class ResNet(nn.Module):
         self.layer4 = self._make_layer(block, 8 * nf, num_blocks[3], stride=2)
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
 
-
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="relu")
             elif isinstance(m, (nn.BatchNorm2d, nn.GroupNorm)):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
@@ -143,7 +165,7 @@ class ResNet18(ModelWrapper):
     def __init__(self, heads: nn.ModuleDict, scenario: str, **kwargs):
         model = ResNet(BasicBlock, [2, 2, 2, 2], **kwargs)
         super().__init__(model=model, heads=heads, scenario=scenario)
-    
+
 
 @register_model("resnet34")
 class ResNet34(ModelWrapper):
@@ -213,7 +235,7 @@ class ResNet101(ModelWrapper):
 #         #     config.name,
 #         #     config.head,
 #         #     config.nf,
-#         #     config.input_size, 
+#         #     config.input_size,
 #         #     config.feat_dim,
 #         # )
 #         return cls()
@@ -268,7 +290,7 @@ class ResNet101(ModelWrapper):
 #     def _make_layers(self, dim_in, n_classes, num_layers):
 #         layers = []
 #         for _ in range(num_layers):
-#             layers.append(nn.Linear(dim_in, n_classes))        
+#             layers.append(nn.Linear(dim_in, n_classes))
 #         return nn.ModuleList(layers)
 
 #     def return_hidden(self, x, layer=-1):
@@ -279,5 +301,3 @@ class ResNet101(ModelWrapper):
 
 #     def forward(self, x, task):
 #         return self.heads[task](self.encoder(x))
-
-

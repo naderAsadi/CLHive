@@ -4,7 +4,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from .model_wrapper import ModelWrapper
+from .continual_model import ContinualModel
 from ..utils.registry_utils import import_all_modules
 
 
@@ -15,11 +15,12 @@ MODEL_CLASS_NAMES = set()
 MODEL_REGISTRY_TB = {}
 MODEL_CLASS_NAMES_TB = {}
 
-def register_model(name, bypass_checks=False):
-    """Register a :class:`ModelWrapper` subclass.
 
-    This decorator allows instantiating a subclass of :class:`ModelWrapper`
-    from a configuration file. To use it, apply this decorator to a `ModelWrapper`
+def register_model(name, bypass_checks=False):
+    """Register a :class:`ContinualModel` subclass.
+
+    This decorator allows instantiating a subclass of :class:`ContinualModel`
+    from a configuration file. To use it, apply this decorator to a `ContinualModel`
     subclass.
 
     Args:
@@ -33,9 +34,9 @@ def register_model(name, bypass_checks=False):
                 raise ValueError(
                     f"Cannot register duplicate model ({name}). Already registered at \n{MODEL_REGISTRY_TB[name]}\n"
                 )
-            if not issubclass(cls, ModelWrapper):
+            if not issubclass(cls, ContinualModel):
                 raise ValueError(
-                    f"Model ({name}: {cls.__name__}) must extend ModelWrapper"
+                    f"Model ({name}: {cls.__name__}) must extend ContinualModel"
                 )
             if cls.__name__ in MODEL_CLASS_NAMES:
                 raise ValueError(
@@ -47,8 +48,9 @@ def register_model(name, bypass_checks=False):
         MODEL_REGISTRY_TB[name] = tb
         MODEL_CLASS_NAMES_TB[cls.__name__] = tb
         return cls
-    
+
     return register_model_cls
+
 
 def get_model(config: Dict[str, Any], *args, **kwargs):
     """Builds a model from a config.
@@ -71,6 +73,6 @@ def get_model(config: Dict[str, Any], *args, **kwargs):
 # automatically import any Python files in the models/ directory
 import_all_modules(FILE_ROOT, "clhive.models")
 
-from .model_wrapper import ModelWrapper
+from .continual_model import ContinualModel
 from .resnet import ResNet18, ResNet34, ResNet50, ResNet101
 from .heads import *

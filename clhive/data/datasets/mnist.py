@@ -15,19 +15,17 @@ class MNISTDataset(BaseDataset):
 
     def __init__(
         self,
-        root: str, 
+        root: str,
         transform: Optional[Union[BaseTransform, Callable]],
         train: bool,
-        download: bool = True
+        download: bool = True,
     ) -> None:
 
         dataset = MNIST(root, train=train, download=download)
         if transform is None:
             transform = BaseTransform()
-        
-        super().__init__(
-            dataset=dataset, transform=transform
-        )
+
+        super().__init__(dataset=dataset, transform=transform)
 
     @classmethod
     def from_config(cls, config: Dict[str, Any], train: bool) -> "MNISTDataset":
@@ -38,16 +36,11 @@ class MNISTDataset(BaseDataset):
         Returns:
             A MNISTDataset instance.
         """
-        
+
         root = config.get("root")
         train = train
         transform_config = config.get("transform")
         download = config.get("download")
 
         transform = get_transform(transform_config)
-        return cls(
-            root=root, 
-            transform=transform,
-            train=train,
-            download=True
-        )
+        return cls(root=root, transform=transform, train=train, download=True)

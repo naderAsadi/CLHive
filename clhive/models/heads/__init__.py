@@ -37,9 +37,7 @@ def register_head(name, bypass_checks=False):
                     f"Cannot register duplicate head ({name}). Already registered at \n{HEAD_REGISTRY_TB[name]}\n"
                 )
             if not issubclass(cls, BaseHead):
-                raise ValueError(
-                    f"Head ({name}: {cls.__name__}) must extend BaseHead"
-                )
+                raise ValueError(f"Head ({name}: {cls.__name__}) must extend BaseHead")
             if cls.__name__ in HEAD_CLASS_NAMES:
                 raise ValueError(
                     f"Cannot register head with duplicate class name({cls.__name__}). Previously registered at \n{HEAD_CLASS_NAMES_TB[cls.__name__]}\n"

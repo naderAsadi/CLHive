@@ -19,7 +19,7 @@ class BaseHead(nn.Module):
 
         self.in_dim = in_dim
         self.out_dim = out_dim
-    
+
     @classmethod
     def from_config(cls, config: Dict[str, Any]) -> "BaseHead":
         """Instantiates a Head from a configuration.
@@ -32,7 +32,7 @@ class BaseHead(nn.Module):
         """
 
         raise NotImplementedError
-    
+
     def forward(self, x):
         """
         Performs inference on the head.

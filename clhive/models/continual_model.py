@@ -3,8 +3,10 @@ from typing import Any, Dict, List, Optional, Tuple
 import torch
 import torch.nn as nn
 
+from ..config import Config
 
-class ModelWrapper(nn.Module):
+
+class ContinualModel(nn.Module):
     """Base class for models in torchCL.
 
     A model refers either to a specific architecture (e.g. ResNet50) or a
@@ -23,30 +25,33 @@ class ModelWrapper(nn.Module):
     """
 
     def __init__(
-        self, 
-        model: nn.Module, 
-        heads: nn.ModuleDict,
-        scenario: str = 'single_head',
+        self, backbone: nn.Module, heads: nn.ModuleDict, scenario: str = "single_head",
     ) -> None:
         """[summary]
 
         Args:
-            model (nn.Module): [description]
+            backbone (nn.Module): [description]
             heads (nn.ModuleDict): [description]
+            scenario (str): Supported CL scenarios are `single_head` or `multi_head`
         """
 
-        super(ModelWrapper, self).__init__()
-        self._model = model
-        self._heads = heads
-        self._scenario = scenario
+        assert scenario in [
+            "single_head",
+            "multi_head",
+        ], f"Supported CL scenarios are `single_head` or `multi_head`, but {scenario} is entered."
 
-        if self._scenario is 'single_head':
-            self._pred_dim = self._heads.out_dim
+        super(ContinualModel, self).__init__()
+        self.backbone = backbone
+        self.heads = heads
+        self.scenario = scenario
+
+        if self.scenario is "single_head":
+            self._pred_dim = self.heads.out_dim
         else:
-            self._pred_dim = list(self._heads.values())[0].out_dim
-    
+            self._pred_dim = list(self.heads.values())[0].out_dim
+
     @classmethod
-    def from_config(cls, config: Dict[str, Any], *args, **kwargs) -> "ModelWrapper":
+    def from_config(cls, config: Config) -> "ContinualModel":
         """Instantiates a Model from a configuration.
 
         Args:
@@ -57,41 +62,36 @@ class ModelWrapper(nn.Module):
         """
 
         return cls(*args, **kwargs)
-    
-    def set_heads(self, heads: nn.ModuleDict):
-        self._heads = heads
-    
-    def add_head(self, name: str, head: nn.Module):
-        self._heads.update({name: head})
-    
-    def forward_model(self, x):
-        return self._model(x)
 
-    def forward_head(self, x, task: int):
-        if self._scenario is 'single_head':
-            return self._heads(x)
-        
+    def set_heads(self, heads: nn.ModuleDict):
+        self.heads = heads
+
+    def add_head(self, name: str, head: nn.Module):
+        self.heads.update({name: head})
+
+    def forward_model(self, x):
+        return self.backbone(x)
+
+    def forward_head(self, x, task: Optional[int] = None):
+        if self.scenario is "single_head":
+            return self.heads[str(task)](x)
+
         pred = torch.zeros(x.size(0), self._pred_dim).to(x.get_device())
         tasks = task.unique().tolist()
         for t in tasks:
-            idx = (task == t)
-            pred[idx] = self._heads[str(t)](x[idx])
+            idx = task == t
+            pred[idx] = self.heads[str(t)](x[idx])
         return pred
 
-    def forward(self, x, task: int):
+    def forward(self, x, task: Optional[int] = None):
         """
         Perform computation of blocks in the order define in get_blocks.
         """
-        if self._scenario is not 'single_head':
-            assert task not in self._heads.keys(), (
-                f"{task} does not exist in {self._heads.keys()}"
-            )
+        if self.scenario is not "single_head":
+            assert (
+                task not in self.heads.keys()
+            ), f"{task} does not exist in {self.heads.keys()}"
 
         x = self.forward_model(x)
         x = self.forward_head(x, task)
         return x
-        
-
-        
-
-        

@@ -30,13 +30,13 @@ def make_val_from_train(dataset: BaseDataset, split: float = 0.9):
         label_idx = np.squeeze(np.argwhere(dataset.targets == label))
         split_idx = int(label_idx.shape[0] * split)
         train_idx += [label_idx[:split_idx]]
-        val_idx   += [label_idx[split_idx:]]
+        val_idx += [label_idx[split_idx:]]
 
     train_idx = np.concatenate(train_idx)
-    val_idx   = np.concatenate(val_idx)
+    val_idx = np.concatenate(val_idx)
 
     train_ds = Subset(dataset, train_idx)
-    val_ds   = Subset(dataset, val_idx)
+    val_ds = Subset(dataset, val_idx)
 
     return train_ds, val_ds
 
@@ -56,39 +56,39 @@ def get_loaders_and_transforms(config: Dict[str, Any]):
     train_transform = get_transform(transform_name=config.data.transform)
 
     val_set = val_loader = None
-    train_set = get_dataset(config.data, train = True)
-    test_set = get_dataset(config.data, train = False)
+    train_set = get_dataset(config.data, train=True)
+    test_set = get_dataset(config.data, train=False)
     # if config.validation:
     #     train_set, val_set = make_val_from_train(trainval_ds)
 
-    train_sampler = ContinualSampler(dataset = train_set, n_tasks = config.data.n_tasks)
-    train_loader  = DataLoader(
+    train_sampler = ContinualSampler(dataset=train_set, n_tasks=config.data.n_tasks)
+    train_loader = DataLoader(
         train_set,
         num_workers=config.data.n_workers,
         sampler=train_sampler,
         batch_size=config.train.batch_size,
-        pin_memory=True
+        pin_memory=True,
     )
 
-    test_sampler  = ContinualSampler(dataset = test_set,  n_tasks = config.data.n_tasks)
+    test_sampler = ContinualSampler(dataset=test_set, n_tasks=config.data.n_tasks)
     test_loader = DataLoader(
         test_set,
         num_workers=config.data.n_workers,
         batch_size=config.eval.batch_size,
         sampler=test_sampler,
-        pin_memory=True
+        pin_memory=True,
     )
 
     if val_set is not None:
-        val_sampler = ContinualSampler(dataset = val_set, n_tasks = config.data.n_tasks)
-        val_loader  = DataLoader(
+        val_sampler = ContinualSampler(dataset=val_set, n_tasks=config.data.n_tasks)
+        val_loader = DataLoader(
             val_set,
             num_workers=config.data.n_workers,
             batch_size=config.eval.batch_size,
             sampler=val_sampler,
-            pin_memory=True
+            pin_memory=True,
         )
-    
+
     if config.data.n_tasks == -1:
         config.data.n_tasks = train_set._DEFAULT_N_TASKS
     config.data.image_size = (3, train_set._IMAGE_SIZE, train_set._IMAGE_SIZE)
@@ -96,8 +96,8 @@ def get_loaders_and_transforms(config: Dict[str, Any]):
     config.data.n_classes_per_task = config.data.n_classes // config.data.n_tasks
 
     return {
-        "train_loader": train_loader, 
-        "val_loader": val_loader, 
-        "test_loader": test_loader, 
-        "train_transform": train_transform
+        "train_loader": train_loader,
+        "val_loader": val_loader,
+        "test_loader": test_loader,
+        "train_transform": train_transform,
     }

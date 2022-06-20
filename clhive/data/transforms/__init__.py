@@ -13,6 +13,7 @@ FILE_ROOT = Path(__file__).parent
 TRANSFORM_REGISTRY = {}
 TRANSFORM_REGISTRY_TB = {}
 
+
 def register_transform(name: str, bypass_checks=False):
     """Registers a :class:`BaseTransform` subclass.
 
@@ -85,5 +86,4 @@ def get_transform(transform_name: str) -> Callable:
 import_all_modules(FILE_ROOT, "clhive.data.transforms")
 
 from .simclr_transform import SimCLRTransform
-from .base_transform import BaseTransform 
-
+from .base_transform import BaseTransform
