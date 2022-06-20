@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from .base import BaseMethod
 
-from torchcl.utils.registry_utils import import_all_modules
+from ..utils.registry_utils import import_all_modules
 
 
 FILE_ROOT = Path(__file__).parent
@@ -70,7 +70,7 @@ def get_method(config: Dict[str, Any], *args, **kwargs):
 
 
 # automatically import any Python files in the methods/ directory
-import_all_modules(FILE_ROOT, "torchcl.methods")
+import_all_modules(FILE_ROOT, "clhive.methods")
 
 from .finetuning import FineTuning
 from .er import ER

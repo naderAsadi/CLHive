@@ -3,7 +3,7 @@ import traceback
 from pathlib import Path
 from typing import Any, Callable, Dict, List
 
-from torch.utils.data import Sampler
+from ...utils.data import Sampler
 # import torchvision.transforms as transforms
 # import torchvision.transforms._transforms_video as transforms_video
 
@@ -45,6 +45,6 @@ def get_sampler(sampler_config: Dict[str, Any]) -> Callable:
 
 
 # automatically import any Python files in the samplers/ directory
-import_all_modules(FILE_ROOT, "torchcl.data.samplers")
+import_all_modules(FILE_ROOT, "clhive.data.samplers")
 
-from torchcl.data.samplers.continual_sampler import ContinualSampler
+from .continual_sampler import ContinualSampler

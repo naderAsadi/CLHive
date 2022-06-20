@@ -1,7 +1,7 @@
 import traceback
 from pathlib import Path
 
-from torchcl.utils.registry_utils import import_all_modules
+from ...utils.registry_utils import import_all_modules
 
 from .base import BaseDataset
 
@@ -66,7 +66,7 @@ def get_dataset(config, *args, **kwargs):
 
 
 # automatically import any Python files in the data/ directory
-# import_all_modules(FILE_ROOT, "torchcl.data")
+import_all_modules(FILE_ROOT, "clhive.data.datasets")
 
 # import transforms 
 from .cifar import CIFAR10, CIFAR100

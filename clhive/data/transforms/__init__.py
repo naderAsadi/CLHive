@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, List
 
 import torchvision.transforms as pth_transforms
 
-from torchcl.utils.registry_utils import import_all_modules
+from ...utils.registry_utils import import_all_modules
 
 
 FILE_ROOT = Path(__file__).parent
@@ -82,7 +82,7 @@ def get_transform(transform_name: str) -> Callable:
 
 
 # automatically import any Python files in the transforms/ directory
-import_all_modules(FILE_ROOT, "torchcl.data.transforms")
+import_all_modules(FILE_ROOT, "clhive.data.transforms")
 
 from .simclr_transform import SimCLRTransform
 from .base_transform import BaseTransform 

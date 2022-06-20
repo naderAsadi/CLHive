@@ -4,9 +4,8 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from torchcl.models.model_wrapper import ModelWrapper
-
-from torchcl.utils.registry_utils import import_all_modules
+from .model_wrapper import ModelWrapper
+from ..utils.registry_utils import import_all_modules
 
 
 FILE_ROOT = Path(__file__).parent
@@ -70,8 +69,8 @@ def get_model(config: Dict[str, Any], *args, **kwargs):
 
 
 # automatically import any Python files in the models/ directory
-import_all_modules(FILE_ROOT, "torchcl.models")
+import_all_modules(FILE_ROOT, "clhive.models")
 
-import torchcl.models.heads
 from .model_wrapper import ModelWrapper
 from .resnet import ResNet18, ResNet34, ResNet50, ResNet101
+from .heads import *

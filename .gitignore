@@ -4,5 +4,3 @@
 outputs/
 wandb/
 *.pyc
-
-main.py
