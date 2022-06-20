@@ -5,8 +5,8 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import torch
 
-from torchcl.methods import BaseMethod
-from torchcl.models import ModelWrapper
+from ..methods import BaseMethod
+from ..models import ModelWrapper
 
 
 class Trainer:

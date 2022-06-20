@@ -5,10 +5,11 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader, Subset
 
-from torchcl.data.datasets import get_dataset
-from torchcl.data.datasets.base import BaseDataset
-from torchcl.data.transforms import BaseTransform, get_transform
-from torchcl.data.samplers import ContinualSampler
+from .datasets import get_dataset
+from .datasets.base import BaseDataset
+from .transforms import BaseTransform, get_transform
+from .samplers import ContinualSampler
+from ..utils.generic import spinner_animation
 
 
 def make_val_from_train(dataset: BaseDataset, split: float = 0.9):
@@ -40,6 +41,7 @@ def make_val_from_train(dataset: BaseDataset, split: float = 0.9):
     return train_ds, val_ds
 
 
+# @spinner_animation(message="Loading Datasets...")
 def get_loaders_and_transforms(config: Dict[str, Any]):
     """[summary]
 
@@ -93,4 +95,9 @@ def get_loaders_and_transforms(config: Dict[str, Any]):
     config.data.n_classes = train_sampler.n_classes
     config.data.n_classes_per_task = config.data.n_classes // config.data.n_tasks
 
-    return train_transform, train_loader, val_loader, test_loader
+    return {
+        "train_loader": train_loader, 
+        "val_loader": val_loader, 
+        "test_loader": test_loader, 
+        "train_transform": train_transform
+    }

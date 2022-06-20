@@ -2,9 +2,9 @@ from typing import Any, List, Optional, Tuple, Union
 
 import torch
 
-from torchcl.methods import register_method, BaseMethod
-from torchcl.data import Buffer
-from torchcl.data.transforms import BaseTransform
+from . import register_method, BaseMethod
+from ..data import Buffer
+from ..data.transforms import BaseTransform
 
 
 @register_method("er")

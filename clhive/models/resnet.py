@@ -3,8 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
-from torchcl.models import ModelWrapper, register_model
-from torchcl.models.heads import LinearClassifier, DistLinear, ProjectionMLP
+from . import ModelWrapper, register_model
+from .heads import LinearClassifier, DistLinear, ProjectionMLP
 
 
 class BasicBlock(nn.Module):

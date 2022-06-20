@@ -1,4 +1,5 @@
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Optional
+from rich.console import Console
 
 import torch
 
@@ -9,6 +10,17 @@ def get_optimizer(config: Dict[str, Any]):
     )
     optim = getattr(torch.optim, config.name)(**config)
     return optim
+
+def spinner_animation(message: str, spinner_type: Optional[str] = "dots"):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            console = Console()
+            with console.status(message, spinner=spinner_type):
+                return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
 
 
 # Taken from AML codebase

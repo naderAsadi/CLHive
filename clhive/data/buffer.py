@@ -8,7 +8,8 @@ import kornia
 
 from collections import OrderedDict
 from collections.abc import Iterable
-from torchcl.utils.helper import *
+
+from ..utils.generic import *
 
 class Buffer(nn.Module):
     def __init__(

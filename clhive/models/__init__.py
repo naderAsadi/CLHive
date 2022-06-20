@@ -62,8 +62,8 @@ def get_model(config: Dict[str, Any], *args, **kwargs):
         config ([type]): [description]
     """
 
-    assert config["name"] in MODEL_REGISTRY, "unknown model"
-    model = MODEL_REGISTRY[config["name"]].from_config(config, *args, **kwargs)
+    assert config.method.model in MODEL_REGISTRY, "unknown model"
+    model = MODEL_REGISTRY[config.method.model].from_config(config, *args, **kwargs)
 
     return model
 

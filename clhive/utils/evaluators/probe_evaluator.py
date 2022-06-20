@@ -8,10 +8,10 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from torchcl.methods import BaseMethod
-from torchcl.models import ModelWrapper
-from torchcl.models.heads import LinearClassifier
-from torchcl.utils.evaluator import Evaluator
+from ...methods import BaseMethod
+from ...models import ModelWrapper
+from ...models.heads import LinearClassifier
+from ...utils.evaluators import Evaluator
 
 
 class ProbeEvaluator(Evaluator):

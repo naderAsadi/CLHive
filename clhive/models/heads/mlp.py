@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 
-from torchcl.models.heads import register_head, BaseHead
+from . import register_head, BaseHead
 
 
 def normalize(x):

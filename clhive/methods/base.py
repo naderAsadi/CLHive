@@ -6,9 +6,9 @@ import torch
 import torch.nn as nn
 from fvcore.nn import FlopCountAnalysis, flop_count_table
 
-from torchcl.models import ModelWrapper
-from torchcl.data.transforms import BaseTransform
-from torchcl.utils import get_optimizer
+from ..models import ModelWrapper
+from ..data.transforms import BaseTransform
+from ..utils import get_optimizer
 
 
 class BaseMethod(nn.Module):

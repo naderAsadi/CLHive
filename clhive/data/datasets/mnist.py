@@ -3,9 +3,9 @@ from PIL import Image
 
 from torchvision.datasets.mnist import MNIST
 
-from torchcl.data.datasets import register_dataset
-from torchcl.data.datasets.base import BaseDataset
-from torchcl.data.transforms import get_transform, BaseTransform
+from . import register_dataset
+from .base import BaseDataset
+from ..transforms import get_transform, BaseTransform
 
 
 @register_dataset("seq_mnist")

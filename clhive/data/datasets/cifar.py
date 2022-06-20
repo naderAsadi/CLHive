@@ -2,9 +2,9 @@ from typing import Any, Callable, Dict, Optional, Sequence, Union
 
 from torchvision.datasets.cifar import CIFAR10, CIFAR100
 
-from torchcl.data.datasets import register_dataset
-from torchcl.data.datasets.base import BaseDataset
-from torchcl.data.transforms import get_transform, BaseTransform
+from . import register_dataset
+from .base import BaseDataset
+from ..transforms import get_transform, BaseTransform
 
 
 class CIFARDataset(BaseDataset):

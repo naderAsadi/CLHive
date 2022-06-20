@@ -7,8 +7,8 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from torchcl.methods import BaseMethod
-from torchcl.models import ModelWrapper
+from ...methods import BaseMethod
+from ...models import ModelWrapper
 
 
 class Evaluator:

@@ -63,8 +63,8 @@ def get_method(config: Dict[str, Any], *args, **kwargs):
         config ([type]): [description]
     """
 
-    assert config["method"] in METHOD_REGISTRY, "unknown method"
-    method = METHOD_REGISTRY[config["method"]](config=config, *args, **kwargs)
+    assert config.method.name in METHOD_REGISTRY, "unknown method"
+    method = METHOD_REGISTRY[config.method.name](config=config, *args, **kwargs)
 
     return method
 

@@ -2,8 +2,8 @@ from typing import Any, List, Optional, Tuple, Union
 
 import torch
 
-from torchcl.methods import register_method, BaseMethod
-from torchcl.data.transforms import BaseTransform
+from . import register_method, BaseMethod
+from ..data.transforms import BaseTransform
 
 @register_method("finetuning")
 class FineTuning(BaseMethod):

@@ -3,11 +3,11 @@ import traceback
 from pathlib import Path
 from typing import Any, Callable, Dict, List
 
-from ...utils.data import Sampler
+from torch.utils.data import Sampler
 # import torchvision.transforms as transforms
 # import torchvision.transforms._transforms_video as transforms_video
 
-from torchcl.utils.registry_utils import import_all_modules
+from ...utils.registry_utils import import_all_modules
 
 
 FILE_ROOT = Path(__file__).parent

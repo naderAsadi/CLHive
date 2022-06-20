@@ -1,1 +1,1 @@
-from .helper import get_optimizer
+from .generic import get_optimizer
