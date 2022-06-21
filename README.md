@@ -8,6 +8,7 @@
 from clhive.data import SplitCIFAR10
 from clhive.scenarios import ClassIncremental
 from clhive.models import ContinualModel
+from clhive.methods import auto_method
 
 dataset = SplitCIFAR10(root="../cl-datasets/data/")
 scenario = ClassIncremental(dataset=dataset, n_tasks=5, batch_size=32)
@@ -17,10 +18,15 @@ print(
 )
 
 model = ContinualModel.auto_model("resnet18", scenario, image_size=32)
+agent = auto_method(
+    name="finetuning", model=model, optim=SGD(model.parameters(), lr=0.01)
+)
 
 for task_id, train_loader in enumerate(scenario):
     for x, y, t in train_loader:
         # Do your cool stuff here
+        loss = agent.observe(x, y, t)
+        ...
 ```
 
 <details>

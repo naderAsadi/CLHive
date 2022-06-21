@@ -44,10 +44,11 @@ class ContinualModel(nn.Module):
         if isinstance(scenario, TaskIncremental):
             heads = [
                 auto_model(
-                    name=head_name, 
-                    input_size=backbone.last_hid, 
-                    output_size=scenario.loader.sampler.cpt
-                ) for t in range(scenario.n_tasks)
+                    name=head_name,
+                    input_size=backbone.last_hid,
+                    output_size=scenario.loader.sampler.cpt,
+                )
+                for t in range(scenario.n_tasks)
             ]
         else:
             heads = [

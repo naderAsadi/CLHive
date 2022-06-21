@@ -1,11 +1,10 @@
-import copy
 import traceback
-from collections import defaultdict
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Optional, Union
+import torch
 
 from .base import BaseMethod
-
+from ..models import ContinualModel
 from ..utils.registry_utils import import_all_modules
 
 
@@ -53,22 +52,15 @@ def register_method(name, bypass_checks=False):
     return register_method_cls
 
 
-def get_method(config: Dict[str, Any], *args, **kwargs):
-    """Builds a method from a config.
-
-    This assumes a 'name' key in the config which is used to determine what
-    method class to instantiate. For instance, a config `{"name": "my_method",
-    "foo": "bar"}` will find a class that was registered as "my_method"
-    (see :func:`register_method`) and call .from_config on it.
-
-    Args:
-        config ([type]): [description]
-    """
-
-    assert config.method.name in METHOD_REGISTRY, "unknown method"
-    method = METHOD_REGISTRY[config.method.name](config=config, *args, **kwargs)
-
-    return method
+def auto_method(
+    name: str,
+    model: Union[ContinualModel, torch.nn.Module],
+    optim: torch.optim,
+    logger: Optional = None,
+    **kwargs,
+):
+    assert name in METHOD_REGISTRY, "unknown method"
+    return METHOD_REGISTRY[name](model=model, optim=optim, logger=logger)
 
 
 # automatically import any Python files in the methods/ directory

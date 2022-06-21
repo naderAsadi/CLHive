@@ -17,24 +17,14 @@ class BaseMethod(nn.Module):
     """
 
     def __init__(
-        self,
-        model: ContinualModel,
-        n_tasks: int,
-        logger=None,
-        transform: Callable = None,
-        optim: torch.optim = None,
+        self, model: Union[ContinualModel, nn.Module], optim: torch.optim, logger=None,
     ) -> None:
 
         super(BaseMethod, self).__init__()
 
         self.model = model
-        self.logger = logger
-        self.transform = transform
-        self.n_tasks = n_tasks
-
-        if optim is None:
-            optim = get_optimizer(self.config)
         self.optim = optim
+        self.logger = logger
 
         self._model_history = {}
         self._current_task_id = 0
@@ -61,10 +51,6 @@ class BaseMethod(nn.Module):
 
         return self._train_cost, self._train_flop_table
 
-    @classmethod
-    def from_config(cls, config: Config) -> "BaseMethod":
-        pass
-
     def get_model(self, task_id: int = None):
         """[summary]
 
@@ -82,12 +68,12 @@ class BaseMethod(nn.Module):
         ), f"No trained model is available for task {task_id}."
         return self._model_history[str(task_id)]
 
-    def set_model(self, model: ContinualModel, task_id: int):
-        """[summary]
+    def set_model(self, model: Union[ContinualModel, nn.Module], task_id: int):
+        """_summary_
 
         Args:
-            model (ContinualModel): [description]
-            task_id (int): [description]
+            model (Union[ContinualModel, nn.Module]): _description_
+            task_id (int): _description_
         """
         assert model is not None, "Input model cannot be None."
 
@@ -102,25 +88,26 @@ class BaseMethod(nn.Module):
     def eval(self):
         self.model.eval()
 
-    def update(self, loss):
+    def update(self, loss: torch.FloatTensor):
         self.optim.zero_grad()
         loss.backward()
         self.optim.step()
 
-    def observe(self, data: Dict[str, torch.Tensor]):
+    def observe(
+        self, x: torch.FloatTensor, y: torch.FloatTensor, t: torch.FloatTensor
+    ) -> torch.FloatTensor:
         raise NotImplementedError
 
-    def predict(self, data, task_id: Optional[int] = None) -> torch.Tensor:
+    def predict(self, x: torch.FloatTensor, t: torch.FloatTensor) -> torch.FloatTensor:
         if task_id is None:
             task_id = 0
         return self.model(data, task_id)
 
     def on_task_start(self):
+        """Callback executed at the start of each task."""
         pass
 
     def on_task_end(self):
-        """[summary]
-        """
-        # save snapshots and other stuff
+        """Callback executed at the end of each task."""
 
-        self._current_task_id = min(self._current_task_id + 1, self.n_tasks - 1)
+        self._current_task_id += 1
