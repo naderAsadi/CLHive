@@ -8,9 +8,7 @@
 from clhive.data import MNISTDataset
 from clhive.scenarios import ClassIncremental, TaskIncremental
 
-
 dataset = MNISTDataset(root="my/data/path")
-
 scenario = ClassIncremental(dataset=dataset, n_tasks=5, batch_size=32)
 
 print(
