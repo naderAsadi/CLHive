@@ -1,6 +1,10 @@
+from typing import Optional
+
 import numpy as np
 import torch
 from torch.utils.data import Sampler
+
+from ..data import ContinualDataset
 
 
 class ContinualSampler(Sampler):
@@ -19,7 +23,7 @@ class ContinualSampler(Sampler):
             smooth_boundary (bool, optional): [description]. Defaults to False.
         """
 
-        self.ds = dataset
+        self.dataset = dataset
         self.n_tasks = n_tasks
         self.smooth_boundary = smooth_boundary
         self.normal_targets_per_task = normal_targets_per_task
@@ -61,7 +65,7 @@ class ContinualSampler(Sampler):
 
     def set_task(self, task_id: int, sample_all_seen_tasks: bool = False):
         self._current_task = task_id
-        self.ds._set_task(task_id)
+        self.dataset._set_task(task_id)
         self.sample_all_seen_tasks = sample_all_seen_tasks
 
     def _fetch_task_samples(self, task_id):
@@ -89,3 +93,32 @@ class ContinualSampler(Sampler):
     def __len__(self):
         samples_per_task = self.n_samples // self.n_tasks
         return samples_per_task
+
+
+def make_val_from_train(dataset: ContinualDataset, split: float = 0.9):
+    """Create a validation set from training set.
+
+    Args:
+        dataset ([ContinualDataset]): [description]
+        split (float, optional): [description]. Defaults to .9.
+
+    Returns:
+        [type]: [description]
+    """
+
+    train_ds, val_ds = deepcopy(dataset), deepcopy(dataset)
+
+    train_idx, val_idx = [], []
+    for label in np.unique(dataset.targets):
+        label_idx = np.squeeze(np.argwhere(dataset.targets == label))
+        split_idx = int(label_idx.shape[0] * split)
+        train_idx += [label_idx[:split_idx]]
+        val_idx += [label_idx[split_idx:]]
+
+    train_idx = np.concatenate(train_idx)
+    val_idx = np.concatenate(val_idx)
+
+    train_ds = Subset(dataset, train_idx)
+    val_ds = Subset(dataset, val_idx)
+
+    return train_ds, val_ds

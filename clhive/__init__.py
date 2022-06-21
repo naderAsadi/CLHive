@@ -1,7 +1,6 @@
-from clhive import config, data, methods, models, utils
+from clhive import config, data, methods, models, scenarios, utils
 
 from clhive.config import config_parser
-from clhive.data import get_dataset, get_loaders_and_transforms
 from clhive.models import get_model
 from clhive.methods import get_method
 from clhive.utils import evaluators

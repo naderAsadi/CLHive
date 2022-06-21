@@ -1,14 +1,13 @@
 from cmath import log
 import copy
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
 from fvcore.nn import FlopCountAnalysis, flop_count_table
 
 from ..config import Config
-from ..models import ModelWrapper
-from ..data.transforms import BaseTransform
+from ..models import ContinualModel
 from ..utils import get_optimizer
 
 
@@ -19,11 +18,11 @@ class BaseMethod(nn.Module):
 
     def __init__(
         self,
-        model: ModelWrapper,
+        model: ContinualModel,
         n_tasks: int,
         logger=None,
-        transform: Optional[BaseTransform] = BaseTransform,
-        optim: Optional[torch.optim] = None,
+        transform: Callable = None,
+        optim: torch.optim = None,
     ) -> None:
 
         super(BaseMethod, self).__init__()
@@ -83,11 +82,11 @@ class BaseMethod(nn.Module):
         ), f"No trained model is available for task {task_id}."
         return self._model_history[str(task_id)]
 
-    def set_model(self, model: ModelWrapper, task_id: int):
+    def set_model(self, model: ContinualModel, task_id: int):
         """[summary]
 
         Args:
-            model (ModelWrapper): [description]
+            model (ContinualModel): [description]
             task_id (int): [description]
         """
         assert model is not None, "Input model cannot be None."

@@ -8,7 +8,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from ...methods import BaseMethod
-from ...models import ModelWrapper
+from ...models import ContinualModel
 
 
 class Evaluator:

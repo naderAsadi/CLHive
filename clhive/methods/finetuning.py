@@ -3,7 +3,6 @@ from typing import Any, List, Optional, Tuple, Union
 import torch
 
 from . import register_method, BaseMethod
-from ..data.transforms import BaseTransform
 
 
 @register_method("finetuning")

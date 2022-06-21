@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import torch
 
 from ..methods import BaseMethod
-from ..models import ModelWrapper
+from ..models import ContinualModel
 
 
 class Trainer:

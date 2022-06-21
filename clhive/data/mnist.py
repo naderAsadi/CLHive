@@ -4,28 +4,30 @@ from PIL import Image
 from torchvision.datasets.mnist import MNIST
 
 from . import register_dataset
-from .base import BaseDataset
-from ..transforms import get_transform, BaseTransform
+from .continual_dataset import ContinualDataset
 
 
 @register_dataset("seq_mnist")
-class MNISTDataset(BaseDataset):
+class MNISTDataset(ContinualDataset):
 
     _IMAGE_SIZE = 28
 
     def __init__(
         self,
         root: str,
-        transform: Optional[Union[BaseTransform, Callable]],
-        train: bool,
-        download: bool = True,
+        transform: Optional[Callable] = None,
+        normalize_targets_per_task: Optional[bool] = False,
+        train: Optional[bool] = True,
+        download: Optional[bool] = True,
     ) -> None:
 
         dataset = MNIST(root, train=train, download=download)
-        if transform is None:
-            transform = BaseTransform()
 
-        super().__init__(dataset=dataset, transform=transform)
+        super().__init__(
+            dataset=dataset,
+            transform=transform,
+            normalize_targets_per_task=normalize_targets_per_task,
+        )
 
     @classmethod
     def from_config(cls, config: Dict[str, Any], train: bool) -> "MNISTDataset":

@@ -4,7 +4,6 @@ import torch
 
 from . import register_method, BaseMethod
 from ..data import Buffer
-from ..data.transforms import BaseTransform
 
 
 @register_method("er")

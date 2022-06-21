@@ -9,7 +9,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 from ...methods import BaseMethod
-from ...models import ModelWrapper
+from ...models import ContinualModel
 from ...models.heads import LinearClassifier
 from ...utils.evaluators import Evaluator
 

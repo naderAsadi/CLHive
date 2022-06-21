@@ -3,11 +3,10 @@ from typing import Any, Callable, Dict, Optional, Sequence, Union
 from torchvision.datasets.cifar import CIFAR10, CIFAR100
 
 from . import register_dataset
-from .base import BaseDataset
-from ..transforms import get_transform, BaseTransform
+from .continual_dataset import ContinualDataset
 
 
-class CIFARDataset(BaseDataset):
+class CIFARDataset(ContinualDataset):
 
     _CIFAR_TYPE = None
     _DEFAULT_N_TASKS = None
@@ -18,9 +17,10 @@ class CIFARDataset(BaseDataset):
     def __init__(
         self,
         root: str,
-        transform: Optional[Union[BaseTransform, Callable]],
-        train: bool,
-        download: bool = True,
+        transform: Optional[Callable] = None,
+        normalize_targets_per_task: Optional[bool] = False,
+        train: Optional[bool] = True,
+        download: Optional[bool] = True,
     ) -> None:
 
         assert self._CIFAR_TYPE in [
@@ -36,7 +36,11 @@ class CIFARDataset(BaseDataset):
         if transform is None:
             transform = BaseTransform(mean=CIFARDataset._MEAN, std=CIFARDataset._STD)
 
-        super().__init__(dataset=dataset, transform=transform)
+        super().__init__(
+            dataset=dataset,
+            transform=transform,
+            normalize_targets_per_task=normalize_targets_per_task,
+        )
 
     @classmethod
     def from_config(cls, config: Dict[str, Any], train: bool) -> "CIFARDataset":

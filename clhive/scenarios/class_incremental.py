@@ -16,6 +16,18 @@ class ClassIncremental:
         n_workers: Optional[int] = 0,
         smooth_task_boundary: Optional[bool] = False,
     ) -> "ClassIncremental":
+        """_summary_
+
+        Args:
+            dataset (_type_): _description_
+            n_tasks (int): _description_
+            batch_size (int): _description_
+            n_workers (Optional[int], optional): _description_. Defaults to 0.
+            smooth_task_boundary (Optional[bool], optional): _description_. Defaults to False.
+
+        Returns:
+            ClassIncremental: _description_
+        """
 
         self.dataset = dataset
         self.n_tasks = n_tasks
@@ -24,7 +36,9 @@ class ClassIncremental:
         self.smooth_task_boundary = smooth_task_boundary
 
         self._task_id = 0
-        self.loader = self._get_dataloader(dataset=dataset)
+        self.loader = self._create_dataloader()
+
+        self.dataset.normalize_targets_per_task = False
 
     @property
     def n_samples(self) -> int:
@@ -39,12 +53,7 @@ class ClassIncremental:
         else:
             targets = self.dataset.dataset.targets
 
-        return np.unique(targets)
-
-    @property
-    def n_tasks(self) -> int:
-        """Number of tasks in the whole continual setting."""
-        return self.n_tasks
+        return len(np.unique(targets))
 
     def __len__(self) -> int:
         """Returns the number of tasks.
@@ -71,15 +80,17 @@ class ClassIncremental:
         self.loader.sampler.set_task(task_id)
         return self.loader
 
-    def _get_dataloader(self, dataset) -> DataLoader:
+    def _create_dataloader(self) -> DataLoader:
         sampler = ContinualSampler(
-            dataset=dataset,
+            dataset=self.dataset,
             n_tasks=self.n_tasks,
             smooth_boundary=self.smooth_task_boundary,
             normal_targets_per_task=False,
         )
+        self.dataset.n_classes_per_task = sampler.cpt
+
         return DataLoader(
-            dataset=dataset,
+            dataset=self.dataset,
             batch_size=self.batch_size,
             num_workers=self.n_workers,
             sampler=sampler,
