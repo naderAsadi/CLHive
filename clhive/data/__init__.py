@@ -70,5 +70,5 @@ import_all_modules(FILE_ROOT, "clhive.data")
 
 # import transforms
 from .buffer import Buffer
-from .cifar import CIFAR10, CIFAR100
-from .mnist import MNISTDataset
+from .cifar import SplitCIFAR10, SplitCIFAR100
+from .mnist import SeqMNIST

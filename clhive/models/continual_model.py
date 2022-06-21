@@ -1,54 +1,64 @@
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Union
 
 import torch
 import torch.nn as nn
 
+from . import auto_model
 from ..config import Config
+from ..scenarios import ClassIncremental, TaskIncremental
 
 
 class ContinualModel(nn.Module):
-    """Base class for models in torchCL.
-
-    A model refers either to a specific architecture (e.g. ResNet50) or a
-    family of architectures (e.g. ResNet). Models can take arguments in the
-    constructor in order to configure different behavior (e.g.
-    hyperparameters).  torchCL models must implement :func:`from_config` in
-    order to allow instantiation from a configuration file. Like regular
-    PyTorch models, models must also implement :func:`forward`, where
-    the bulk of the inference logic lives.
-
-    Models also have some advanced functionality for production
-    fine-tuning systems. For example, we allow users to train a trunk
-    model and then attach heads to the model via the attachable
-    blocks.  Making your model support the trunk-heads paradigm is
-    completely optional.
-    """
-
     def __init__(
-        self, backbone: nn.Module, heads: nn.ModuleDict, scenario: str = "single_head",
-    ) -> None:
-        """[summary]
-
-        Args:
-            backbone (nn.Module): [description]
-            heads (nn.ModuleDict): [description]
-            scenario (str): Supported CL scenarios are `single_head` or `multi_head`
-        """
-
-        assert scenario in [
-            "single_head",
-            "multi_head",
-        ], f"Supported CL scenarios are `single_head` or `multi_head`, but {scenario} is entered."
+        self,
+        backbone: nn.Module,
+        heads: Union[nn.ModuleList, nn.Module],
+        scenario: Union[ClassIncremental, TaskIncremental],
+    ) -> "ContinualModel":
 
         super(ContinualModel, self).__init__()
-        self.backbone = backbone
-        self.heads = heads
-        self.scenario = scenario
 
-        if self.scenario is "single_head":
-            self._pred_dim = self.heads.out_dim
+        self.backbone = backbone
+        self.scenario = scenario
+        self.heads = nn.ModuleList(heads)
+
+        if isinstance(scenario, TaskIncremental):
+            msg = (
+                "Number of `heads` should be equal to `n_tasks`"
+                + "in TaskIncremental scenario, "
+                + f"expected {scenario.n_tasks} nn.Modules but received {len(self.heads)}."
+            )
+            assert len(self.heads) == scenario.n_tasks, msg
+
+    @classmethod
+    def auto_model(
+        cls,
+        backbone_name: str,
+        scenario: Union[ClassIncremental, TaskIncremental],
+        image_size: int,
+        head_name: Optional[str] = "linear",
+    ) -> "ContinualModel":
+
+        backbone = auto_model(name=backbone_name, input_size=image_size)
+
+        if isinstance(scenario, TaskIncremental):
+            heads = [
+                auto_model(
+                    name=head_name, 
+                    input_size=backbone.last_hid, 
+                    output_size=scenario.loader.sampler.cpt
+                ) for t in range(scenario.n_tasks)
+            ]
         else:
-            self._pred_dim = list(self.heads.values())[0].out_dim
+            heads = [
+                auto_model(
+                    name=head_name,
+                    input_size=backbone.last_hid,
+                    output_size=scenario.n_classes,
+                )
+            ]
+
+        return cls(backbone, heads, scenario)
 
     @classmethod
     def from_config(cls, config: Config) -> "ContinualModel":
@@ -63,35 +73,36 @@ class ContinualModel(nn.Module):
 
         return cls(*args, **kwargs)
 
-    def set_heads(self, heads: nn.ModuleDict):
+    def set_heads(self, heads: nn.ModuleDict) -> None:
         self.heads = heads
 
-    def add_head(self, name: str, head: nn.Module):
+    def add_head(self, name: str, head: nn.Module) -> None:
         self.heads.update({name: head})
 
-    def forward_model(self, x):
+    def forward_backbone(self, x) -> torch.Tensor:
         return self.backbone(x)
 
-    def forward_head(self, x, task: Optional[int] = None):
-        if self.scenario is "single_head":
-            return self.heads[str(task)](x)
+    def forward_head(self, x: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
+        if isinstance(self.scenario, ClassIncremental):
+            return self.heads[0](x)
 
-        pred = torch.zeros(x.size(0), self._pred_dim).to(x.get_device())
-        tasks = task.unique().tolist()
-        for t in tasks:
-            idx = task == t
-            pred[idx] = self.heads[str(t)](x[idx])
+        pred = torch.zeros(x.size(0), self.heads[0].output_size)
+        tasks = t.unique().tolist()
+        for task in tasks:
+            idx = t == task
+            pred[idx] = self.heads[task](x[idx, ...])
+
         return pred
 
-    def forward(self, x, task: Optional[int] = None):
+    def forward(self, x: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
         """
         Perform computation of blocks in the order define in get_blocks.
         """
-        if self.scenario is not "single_head":
-            assert (
-                task not in self.heads.keys()
-            ), f"{task} does not exist in {self.heads.keys()}"
+        if isinstance(self.scenario, TaskIncremental):
+            assert t.max() < len(
+                self.heads
+            ), f"head number {t} does not exist in `ContinualModel.heads`"
 
-        x = self.forward_model(x)
-        x = self.forward_head(x, task)
+        x = self.forward_backbone(x)
+        x = self.forward_head(x, t)
         return x

@@ -33,9 +33,6 @@ class CIFARDataset(ContinualDataset):
         if self._CIFAR_TYPE == "cifar100":
             dataset = CIFAR100(root, train=train, download=download)
 
-        if transform is None:
-            transform = BaseTransform(mean=CIFARDataset._MEAN, std=CIFARDataset._STD)
-
         super().__init__(
             dataset=dataset,
             transform=transform,
@@ -62,12 +59,12 @@ class CIFARDataset(ContinualDataset):
 
 
 @register_dataset("cifar10")
-class CIFAR10Dataset(CIFARDataset):
+class SplitCIFAR10(CIFARDataset):
     _CIFAR_TYPE = "cifar10"
     _DEFAULT_N_TASKS = 5
 
 
 @register_dataset("cifar100")
-class CIFAR100Dataset(CIFARDataset):
+class SplitCIFAR100(CIFARDataset):
     _CIFAR_TYPE = "cifar100"
     _DEFAULT_N_TASKS = 20

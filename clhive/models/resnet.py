@@ -1,10 +1,12 @@
+from typing import Optional
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
-from . import ContinualModel, register_model
-from .heads import LinearClassifier, DistLinear, ProjectionMLP
+from . import register_model
+from .mlp import LinearClassifier, DistLinear, MLP
 
 
 class BasicBlock(nn.Module):
@@ -92,7 +94,14 @@ class Bottleneck(nn.Module):
 
 class ResNet(nn.Module):
     def __init__(
-        self, block, num_blocks, nf, input_size, in_channel=3, zero_init_residual=False
+        self,
+        block,
+        num_blocks,
+        nf,
+        input_size,
+        in_channel=3,
+        zero_init_residual=False,
+        **kwargs
     ):
         super(ResNet, self).__init__()
 
@@ -161,143 +170,28 @@ class ResNet(nn.Module):
 
 
 @register_model("resnet18")
-class ResNet18(ContinualModel):
-    def __init__(self, heads: nn.ModuleDict, scenario: str, **kwargs):
-        model = ResNet(BasicBlock, [2, 2, 2, 2], **kwargs)
-        super().__init__(model=model, heads=heads, scenario=scenario)
+def resnet18(input_size: int, nf: Optional[int] = 32, **kwargs):
+    return ResNet(
+        BasicBlock, num_blocks=[2, 2, 2, 2], nf=nf, input_size=input_size, **kwargs
+    )
 
 
 @register_model("resnet34")
-class ResNet34(ContinualModel):
-    def __init__(self, heads: nn.ModuleDict, scenario: str, **kwargs):
-        model = ResNet(BasicBlock, [3, 4, 6, 3], **kwargs)
-        super().__init__(model=model, heads=heads, scenario=scenario)
+def resnet34(input_size: int, nf: Optional[int] = 32, **kwargs):
+    return ResNet(
+        BasicBlock, num_blocks=[3, 4, 6, 3], nf=nf, input_size=input_size, **kwargs
+    )
 
 
 @register_model("resnet50")
-class ResNet50(ContinualModel):
-    def __init__(self, heads: nn.ModuleDict, scenario: str, **kwargs):
-        model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
-        super().__init__(model=model, heads=heads, scenario=scenario)
+def resnet50(input_size: int, nf: Optional[int] = 32, **kwargs):
+    return ResNet(
+        Bottleneck, num_blocks=[3, 4, 6, 3], nf=nf, input_size=input_size, **kwargs
+    )
 
 
 @register_model("resnet101")
-class ResNet101(ContinualModel):
-    def __init__(self, heads: nn.ModuleDict, scenario: str, **kwargs):
-        model = ResNet(Bottleneck, [3, 4, 23, 3], **kwargs)
-        super().__init__(model=model, heads=heads, scenario=scenario)
-
-
-# model_dict = {
-#     'resnet18': [resnet18, 512],
-#     'resnet34': [resnet34, 512],
-#     'resnet50': [resnet50, 2048],
-#     'resnet101': [resnet101, 2048],
-# }
-
-# feature_dims = {
-#     'resnet18':{
-#         '1': 128,
-#         '2': 256,
-#         '3': 512,
-#         '4': 512
-#     },
-#     'resnet34':{
-#         '1': 128,
-#         '2': 256,
-#         '3': 512,
-#         '4': 512
-#     }
-# }
-
-
-# ---------------------------------------------
-
-# @register_model("supconnet")
-# class SupConResNet(BaseModel):
-#     """backbone + projection head"""
-#     def __init__(self, name='resnet50', head='mlp', nf=64, input_size=(3,32,32), feat_dim=128, hidden_dim=256, batch_norm=False, num_layers=2):
-#         super(SupConResNet, self).__init__()
-#         model_fun, _ = model_dict[name]
-#         self.encoder = model_fun(nf=nf, input_size=input_size)
-
-#         if head == 'linear':
-#             self.head = nn.Linear(self.encoder.last_hid, feat_dim)
-#         elif head == 'mlp':
-#             self.head = ProjectionMLP(self.encoder.last_hid, hidden_dim, feat_dim, batch_norm, num_layers)
-#         else:
-#             raise NotImplementedError(
-#                 'head not supported: {}'.format(head))
-
-#     @classmethod
-#     def from_config(cls, config):
-#         # params = (
-#         #     config.name,
-#         #     config.head,
-#         #     config.nf,
-#         #     config.input_size,
-#         #     config.feat_dim,
-#         # )
-#         return cls()
-
-#     def return_hidden(self, x, layer=-1):
-#         return self.encoder.return_hidden(x, layer)
-
-#     def forward_classifier(self, x, task=None):
-#         feat = self.head(x)
-#         return feat
-
-#     def forward(self, x, task=None):
-#         feat = self.head(self.encoder(x))
-#         # feat = F.normalize(feat, dim=1)
-#         return feat
-
-
-# class SupCEResNet(nn.Module):
-#     """encoder + classifier"""
-#     def __init__(self, name='resnet50', head='linear', nf=64, input_size=(3,32,32), num_classes=10):
-#         super(SupCEResNet, self).__init__()
-#         model_fun, _ = model_dict[name]
-#         self.encoder = model_fun(nf=nf, input_size=input_size)
-
-#         if head == 'linear':
-#             self.head = nn.Linear(self.encoder.last_hid, num_classes)
-#         elif head == 'distlinear':
-#             self.head = distLinear(self.encoder.last_hid, num_classes)
-#         else:
-#             raise NotImplementedError(
-#                 f'head not supported: {head}')
-
-#     def return_hidden(self, x, layer=-1):
-#         return self.encoder.return_hidden(x, layer)
-
-#     def forward_classifier(self, x, task=None):
-#         return self.head(x)
-
-#     def forward(self, x, task=None):
-#         return self.head(self.encoder(x))
-
-
-# class MultiHeadResNet(nn.Module):
-#     """encoder + classifier"""
-#     def __init__(self, name='resnet50', nf=64, input_size=(3,32,32), n_classes_per_head=10, n_heads=10):
-#         super(MultiHeadResNet, self).__init__()
-#         model_fun, _ = model_dict[name]
-#         self.encoder = model_fun(nf=nf, input_size=input_size)
-
-#         self.heads = self._make_layers(self.encoder.last_hid, n_classes_per_head, n_heads)
-
-#     def _make_layers(self, dim_in, n_classes, num_layers):
-#         layers = []
-#         for _ in range(num_layers):
-#             layers.append(nn.Linear(dim_in, n_classes))
-#         return nn.ModuleList(layers)
-
-#     def return_hidden(self, x, layer=-1):
-#         return self.encoder.return_hidden(x, layer)
-
-#     def forward_classifier(self, x, task):
-#         return self.heads[task](x)
-
-#     def forward(self, x, task):
-#         return self.heads[task](self.encoder(x))
+def resnet101(input_size: int, nf: Optional[int] = 32, **kwargs):
+    return ResNet(
+        Bottleneck, num_blocks=[3, 4, 23, 3], nf=nf, input_size=input_size, **kwargs
+    )

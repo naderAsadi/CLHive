@@ -7,8 +7,8 @@ from . import register_dataset
 from .continual_dataset import ContinualDataset
 
 
-@register_dataset("seq_mnist")
-class MNISTDataset(ContinualDataset):
+@register_dataset("seqmnist")
+class SeqMNIST(ContinualDataset):
 
     _IMAGE_SIZE = 28
 

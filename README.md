@@ -5,15 +5,18 @@
 ## How To Use
 
 ```python
-from clhive.data import MNISTDataset
-from clhive.scenarios import ClassIncremental, TaskIncremental
+from clhive.data import SplitCIFAR10
+from clhive.scenarios import ClassIncremental
+from clhive.models import ContinualModel
 
-dataset = MNISTDataset(root="my/data/path")
+dataset = SplitCIFAR10(root="../cl-datasets/data/")
 scenario = ClassIncremental(dataset=dataset, n_tasks=5, batch_size=32)
 
 print(
   f"Number of tasks: {scenario.n_tasks} | Number of classes: {scenario.n_classes}"
 )
+
+model = ContinualModel.auto_model("resnet18", scenario, image_size=32)
 
 for task_id, train_loader in enumerate(scenario):
     for x, y, t in train_loader:

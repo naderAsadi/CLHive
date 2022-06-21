@@ -4,7 +4,6 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from .continual_model import ContinualModel
 from ..utils.registry_utils import import_all_modules
 
 
@@ -17,17 +16,6 @@ MODEL_CLASS_NAMES_TB = {}
 
 
 def register_model(name, bypass_checks=False):
-    """Register a :class:`ContinualModel` subclass.
-
-    This decorator allows instantiating a subclass of :class:`ContinualModel`
-    from a configuration file. To use it, apply this decorator to a `ContinualModel`
-    subclass.
-
-    Args:
-        name ([type]): [description]
-        bypass_checks (bool, optional): [description]. Defaults to False.
-    """
-
     def register_model_cls(cls):
         if not bypass_checks:
             if name in MODEL_REGISTRY:
@@ -48,27 +36,28 @@ def register_model(name, bypass_checks=False):
     return register_model_cls
 
 
-def get_model(config: Dict[str, Any], *args, **kwargs):
-    """Builds a model from a config.
+def auto_model(
+    name: str,
+    input_size: int,
+    hidden_size: Optional[int] = None,
+    output_size: Optional[int] = None,
+    nf: Optional[int] = 32,
+    **kwargs,
+):
 
-    This assumes a 'name' key in the config which is used to determine what
-    model class to instantiate. For instance, a config `{"name": "my_model",
-    "foo": "bar"}` will find a class that was registered as "my_model"
-    (see :func:`register_model`) and call .from_config on it.
-
-    Args:
-        config ([type]): [description]
-    """
-
-    assert config.method.model in MODEL_REGISTRY, "unknown model"
-    model = MODEL_REGISTRY[config.method.model].from_config(config, *args, **kwargs)
-
-    return model
+    assert name in MODEL_REGISTRY, "unknown model"
+    return MODEL_REGISTRY[name](
+        input_size=input_size,
+        hidden_size=hidden_size,
+        output_size=output_size,
+        nf=nf,
+        **kwargs,
+    )
 
 
 # automatically import any Python files in the models/ directory
 import_all_modules(FILE_ROOT, "clhive.models")
 
 from .continual_model import ContinualModel
-from .resnet import ResNet18, ResNet34, ResNet50, ResNet101
-from .heads import *
+from .resnet import resnet18, resnet34, resnet50, resnet101
+from .mlp import LinearClassifier, DistLinear, MLP
