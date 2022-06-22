@@ -54,7 +54,7 @@ for task_id, train_loader in enumerate(scenario):
         ...
 ```
 
-You can easily use *clhive.Trainer* to train the continual agent in any of the supported scenarios. 
+Instead of iterating over all tasks manually, you can easily use *clhive.Trainer* to train the continual agent in any of the supported scenarios. 
 
 ```python
 from clhive import Trainer
