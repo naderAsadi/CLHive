@@ -5,12 +5,13 @@ import torch
 from torch.utils.data import DataLoader
 
 from .continual_sampler import ContinualSampler
+from ..data import ContinualDataset
 
 
 class ClassIncremental:
     def __init__(
         self,
-        dataset,
+        dataset: ContinualDataset,
         n_tasks: int,
         batch_size: int,
         n_workers: Optional[int] = 0,
@@ -36,7 +37,7 @@ class ClassIncremental:
         self.smooth_task_boundary = smooth_task_boundary
 
         self._task_id = 0
-        self.loader = self._create_dataloader()
+        self.loader = self._create_dataloader(dataset=self.dataset)
 
         self.dataset.normalize_targets_per_task = False
 
@@ -80,17 +81,17 @@ class ClassIncremental:
         self.loader.sampler.set_task(task_id)
         return self.loader
 
-    def _create_dataloader(self) -> DataLoader:
+    def _create_dataloader(self, dataset: ContinualDataset) -> DataLoader:
         sampler = ContinualSampler(
-            dataset=self.dataset,
+            dataset=dataset,
             n_tasks=self.n_tasks,
             smooth_boundary=self.smooth_task_boundary,
             normal_targets_per_task=False,
         )
-        self.dataset.n_classes_per_task = sampler.cpt
+        dataset.n_classes_per_task = sampler.cpt
 
         return DataLoader(
-            dataset=self.dataset,
+            dataset=dataset,
             batch_size=self.batch_size,
             num_workers=self.n_workers,
             sampler=sampler,

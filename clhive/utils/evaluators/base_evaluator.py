@@ -11,7 +11,7 @@ from ...methods import BaseMethod
 from ...models import ContinualModel
 
 
-class Evaluator:
+class ContinualEvaluator:
     def __init__(
         self,
         method: BaseMethod,

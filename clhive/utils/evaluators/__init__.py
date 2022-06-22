@@ -1,2 +1,2 @@
-from .base_evaluator import Evaluator
+from .base_evaluator import ContinualEvaluator
 from .probe_evaluator import ProbeEvaluator

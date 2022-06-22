@@ -5,6 +5,7 @@ from clhive.data import SplitCIFAR10
 from clhive.scenarios import ClassIncremental, TaskIncremental
 from clhive.models import ContinualModel
 from clhive.methods import auto_method
+from clhive import Trainer
 
 dataset = SplitCIFAR10(root="../cl-datasets/data/")
 scenario = TaskIncremental(dataset=dataset, n_tasks=5, batch_size=32, n_workers=6)
@@ -19,10 +20,13 @@ agent = auto_method(
     name="finetuning", model=model, optim=SGD(model.parameters(), lr=0.01)
 )
 
-for task_id, train_loader in enumerate(scenario):
-    for x, y, t in train_loader:
-        # Do your cool stuff here
-        x, y, t = x.to(device), y.to(device), t.to(device)
-        loss = agent.observe(x, y, t)
+trainer = Trainer(method=agent, scenario=scenario, n_epochs=5, accelerator="gpu")
+trainer.fit()
 
-        print(f"Task: {task_id} - Loss: {loss.item()}", end="\r")
+# for task_id, train_loader in enumerate(scenario):
+#     for x, y, t in train_loader:
+#         # Do your cool stuff here
+#         x, y, t = x.to(device), y.to(device), t.to(device)
+#         loss = agent.observe(x, y, t)
+
+#         print(f"Task: {task_id} - Loss: {loss.item()}", end="\r")

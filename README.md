@@ -54,6 +54,15 @@ for task_id, train_loader in enumerate(scenario):
         ...
 ```
 
+You can easily use *clhive.Trainer* to train the continual agent in any of the supported scenarios. 
+
+```python
+from clhive import Trainer
+
+trainer = Trainer(method=agent, scenario=scenario, n_epochs=5, accelerator="gpu")
+trainer.fit()
+```
+
 ### Command-Line Interface
 
 Lightly is accessible also through a command-line interface (CLI). To train a ER model on Tiny-ImageNet you can simply run the following command:

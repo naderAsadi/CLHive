@@ -10,10 +10,10 @@ from torch.utils.data import DataLoader
 
 from ...methods import BaseMethod
 from ...models import ContinualModel, LinearClassifier
-from ...utils.evaluators import Evaluator
+from ...utils.evaluators import ContinualEvaluator
 
 
-class ProbeEvaluator(Evaluator):
+class ProbeEvaluator(ContinualEvaluator):
     def __init__(
         self,
         method: BaseMethod,

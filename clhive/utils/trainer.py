@@ -1,68 +1,68 @@
+from typing import Optional, Union
 import copy
 import os
 import time
-from typing import Any, Dict, List, Optional, Tuple, Union
 
 import torch
+from torch.utils.data import DataLoader
 
+from .evaluators import ContinualEvaluator, ProbeEvaluator
 from ..methods import BaseMethod
 from ..models import ContinualModel
+from ..scenarios import ClassIncremental, TaskIncremental
 
 
 class Trainer:
     def __init__(
         self,
         method: BaseMethod,
-        train_loader: torch.utils.data.DataLoader,
-        config: Dict[str, Any],
+        scenario: Union[ClassIncremental, TaskIncremental],
+        n_epochs: int,
+        evaluator: Optional[Union[ContinualEvaluator, ProbeEvaluator]] = None,
         logger=None,
-        evaluator=None,
-    ) -> None:
+        accelerator: Optional[str] = "gpu",
+    ) -> "Trainer":
 
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        assert accelerator in ["gpu", "cpu", None], (
+            "Currently supported accelerators are [`gpu`, `cpu`],"
+            + " but {accelerator} was received."
+        )
+
+        self.device = torch.device(
+            "cuda" if accelerator == "gpu" and torch.cuda.is_available() else "cpu"
+        )
 
         self.agent = method.to(self.device)
-        self.loader = train_loader
-        self.config = config
+        self.scenario = scenario
         self.logger = logger
         self.evaluator = evaluator
 
-    def _train_task(self, task_id: int):
+        self.n_epochs = n_epochs
 
-        self.loader.sampler.set_task(task_id)
+    def _train_task(self, task_id: int, train_loader: DataLoader):
 
         self.agent.train()
         self.agent.on_task_start()
 
         start_time = time.time()
 
-        print("\n>>> Task #{} --> Model Training".format(task_id))
-        for epoch in range(self.config.train.n_epochs):
+        print(f"\n>>> Task #{task_id} --> Model Training")
+        for epoch in range(self.n_epochs):
             # adjust learning rate
 
-            for idx, (data, targets, task) in enumerate(self.loader):
-                if self.config.train.scenario == "multi_head":
-                    targets -= targets.min()
-
-                inc_data = {
-                    "x": data.to(self.device),
-                    "y": targets.to(self.device),
-                    "t": task,
-                }
-                loss = self.agent.observe(inc_data)
+            for idx, (x, y, t) in enumerate(train_loader):
+                x, y, t = x.to(self.device), y.to(self.device), t.to(self.device)
+                loss = self.agent.observe(x, y, t)
 
                 print(
-                    f"Epoch: {epoch + 1} / {self.config.train.n_epochs} | {idx} / {len(self.loader)} - Loss: {loss}",
+                    f"Epoch: {epoch + 1} / {self.n_epochs} | {idx} / {len(train_loader)} - Loss: {loss}",
                     end="\r",
                 )
 
         print(f"Task {task_id}. Time {time.time() - start_time:.2f}")
         self.on_task_end()
 
-    def configure_optimizer(self):
-        pass
-
-    def set_evaluator(self, evaluator):
+    def set_evaluator(self, evaluator: Union[ContinualEvaluator, ProbeEvaluator]):
         self.evaluator = evaluator
 
     def on_task_end(self):
@@ -75,5 +75,5 @@ class Trainer:
 
     def fit(self):
 
-        for task_id in range(self.config.data.n_tasks):
-            self._train_task(task_id=task_id)
+        for task_id, train_loader in enumerate(self.scenario):
+            self._train_task(task_id=task_id, train_loader=train_loader)
