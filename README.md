@@ -17,7 +17,7 @@ With *clhive* you can use latest continual learning methods in a modular way usi
 
 ### Dependencies
 
-Lightly requires **Python 3.6+**.
+CLHive requires **Python 3.6+**.
 
 - fvcore
 - hydra-core>=1.0.0

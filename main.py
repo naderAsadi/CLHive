@@ -23,10 +23,3 @@ agent = auto_method(
 trainer = Trainer(method=agent, scenario=scenario, n_epochs=5, accelerator="gpu")
 trainer.fit()
 
-# for task_id, train_loader in enumerate(scenario):
-#     for x, y, t in train_loader:
-#         # Do your cool stuff here
-#         x, y, t = x.to(device), y.to(device), t.to(device)
-#         loss = agent.observe(x, y, t)
-
-#         print(f"Task: {task_id} - Loss: {loss.item()}", end="\r")
