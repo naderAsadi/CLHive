@@ -1,6 +1,15 @@
 ## Overview
 **CLHive** is a codebase on top of [PyTorch](https://pytorch.org) for Continual Learning research. It provides the components necessary to run CL experiments, for both task-incremental and class-incremental settings. It is designed to be readable and easily extensible, to allow users to quickly run and experiment with their own ideas.
 
+### Current Supported Methods
+
+- [LwF, 2016](https://arxiv.org/abs/1606.09282)
+- [AGEM, 2018](https://arxiv.org/abs/1812.00420)
+- [iCaRL, 2016](https://arxiv.org/abs/1611.07725)
+- [ER, 2019](https://arxiv.org/abs/1902.10486)
+- [MIR, 2019](https://arxiv.org/abs/1908.04742)
+- [DER, 2020](https://arxiv.org/abs/2004.07211)
+- [ER-ACE/ER-AML, 2022](https://arxiv.org/abs/2203.03798)
 
 ## How To Use
 
