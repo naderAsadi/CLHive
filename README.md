@@ -4,6 +4,22 @@
 
 ## How To Use
 
+With *clhive* you can use latest continual learning methods in a modular way using the full power of PyTorch. Experiment with different backbones, models and loss functions. The framework has been designed to be easy to use from the ground up.
+
+### Dependencies
+
+Lightly requires **Python 3.6+**.
+
+- fvcore
+- hydra-core>=1.0.0
+- numpy>=1.18.1
+- pytorch
+- rich
+- torchvision
+- wandb
+
+### Quick Start
+
 ```python
 from clhive.data import SplitCIFAR10
 from clhive.scenarios import ClassIncremental
@@ -29,16 +45,32 @@ for task_id, train_loader in enumerate(scenario):
         ...
 ```
 
+### Command-Line Interface
+
+Lightly is accessible also through a command-line interface (CLI). To train a ER model on Tiny-ImageNet you can simply run the following command:
+
+```
+python main.py ...
+```
+
 <details>
-  <summary>Training examples</summary>
+  <summary>More CLI examples:</summary>
   
 Train CLIP with ViT-base on COCO Captions dataset:
 
 ```
 python main.py data=coco model/vision_model=vit-b  model/text_model=vit-b
 ```
-  
+
 </details>
+
+
+
+## Terminology
+
+Below you can see a schematic overview of the different concepts present in the *clhive* Python package.
+
+
 
 ## Reading The Commits
 Here is a reference to what each emoji in the commits means:
