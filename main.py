@@ -22,4 +22,3 @@ agent = auto_method(
 
 trainer = Trainer(method=agent, scenario=scenario, n_epochs=5, accelerator="gpu")
 trainer.fit()
-

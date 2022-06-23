@@ -1,15 +1,21 @@
 from typing import Any, Dict, List, Optional
-from rich.console import Console
-from rich.table import Table
 
 from .base import BaseLogger
 
 
-class ConsoleLogger(BaseLogger):
-    def __init__(self, n_tasks: int, log_dir: Optional[str] = "./logs/"):
+class ContinualLogger(BaseLogger):
+    def __init__(
+        self,
+        n_tasks: int,
+        loggers: Optional[List[BaseLogger]] = None,
+        save_dir: Optional[str] = "./logs/",
+    ):
         super().__init__(log_dir)
 
-        self.console = Console()
+        self.loggers = loggers
+
+    def add_logger(self, logger: BaseLogger):
+        self.loggers.append(logger)
 
     def log_metric(self, name: str, value: float, step: Optional[int] = None):
         """_summary_
