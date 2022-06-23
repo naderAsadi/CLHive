@@ -3,7 +3,7 @@
 ## Overview
 **CLHive** is a codebase on top of [PyTorch](https://pytorch.org) for Continual Learning research. It provides the components necessary to run CL experiments, for both task-incremental and class-incremental settings. It is designed to be readable and easily extensible, to allow users to quickly run and experiment with their own ideas.
 
-### Current Supported Methods
+### Currently Supported Methods
 
 - [LwF, 2016](https://arxiv.org/abs/1606.09282)
 - [AGEM, 2018](https://arxiv.org/abs/1812.00420)
@@ -67,7 +67,7 @@ trainer.fit()
 
 ### Command-Line Interface
 
-Lightly is accessible also through a command-line interface (CLI). To train a ER model on Tiny-ImageNet you can simply run the following command:
+CLHive is accessible also through a command-line interface (CLI). To train a ER model on Tiny-ImageNet you can simply run the following command:
 
 ```
 python main.py ...
