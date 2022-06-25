@@ -3,27 +3,14 @@ from typing import Any, Dict, List, Optional
 
 
 class BaseLogger(ABC):
-    @abstractmethod
-    def __init__(
-        self, log_dir: str,
-    ):
-        self.log_dir = log_dir
-        self._step: int = 0
-        self._metrics: List[Dict[str, float]] = []
+    """Base class for experiment loggers."""
 
     @abstractmethod
-    def log_metric(self, name: str, value: float, step: Optional[int] = None):
-        """_summary_
-
-        Args:
-            name (str): _description_
-            value (float): _description_
-            step (Optional[int], optional): _description_. Defaults to None.
-        """
+    def __init__(self):
         pass
 
     @abstractmethod
-    def log_dict(self, metrics: Dict[str, float], step: Optional[int] = None):
+    def log_metrics(self, metrics: Dict[str, float], step: Optional[int] = None):
         """_summary_
 
         Args:
