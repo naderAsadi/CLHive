@@ -56,7 +56,7 @@ for task_id, train_loader in enumerate(train_scenario):
         ...
 ```
 
-Instead of iterating over all tasks manually, you can easily use *clhive.Trainer* to train the continual agent in any of the supported scenarios. 
+Instead of iterating over all tasks manually, you can easily use `clhive.Trainer` to train the continual agent in any of the supported scenarios. 
 
 ```python
 from clhive import Trainer
@@ -77,7 +77,7 @@ evaluator = ContinualEvaluator(method=agent, scenario=test_scenario, accelerator
 evaluator.fit()
 ```
 
-Evaluators can also be passed to `Trainer` for automatic evaluation after each task.
+Evaluators can also be passed to `clhive.Trainer` for automatic evaluation after each task.
 
 ```python
 trainer = Trainer(
