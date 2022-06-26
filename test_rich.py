@@ -5,13 +5,18 @@ from rich.console import Console
 from rich.live import Live
 from rich.table import Table
 from rich.theme import Theme
-from rich.progress import Progress, Column, BarColumn, SpinnerColumn, TextColumn, TimeElapsedColumn
+from rich.progress import (
+    Progress,
+    Column,
+    BarColumn,
+    SpinnerColumn,
+    TextColumn,
+    TimeElapsedColumn,
+)
 
 
 # Theme
-theme = Theme({
-    "repr.number": "light_goldenrod3"
-})
+theme = Theme({"repr.number": "light_goldenrod3"})
 
 # Table
 n_tasks = 4
@@ -21,7 +26,6 @@ for t in range(n_tasks):
     table.add_column(f"Task {t}\nAcc", justify="center")
 table.add_column("Avg.\nAcc.", justify="center", style="light_goldenrod3")
 table.add_column("Avg.\nFgt.", justify="center", style="light_goldenrod3")
-
 
 
 # Progress Bar
@@ -38,15 +42,15 @@ time_column = TimeElapsedColumn()
 
 progress = Progress(
     spinner_column,
-    text_column, 
+    text_column,
     seperator,
     epoch_column,
-    bar_column, 
+    bar_column,
     percent_column,
     dot,
     time_column,
     seperator,
-    expand=False
+    expand=False,
 )
 # progress = Progress()
 train_bar = progress.add_task("Task 1 Training", total=10)
@@ -70,7 +74,7 @@ for row in range(10):
     epoch_column.text_format = f"Epoch {row}"
     progress.update(train_bar, advance=1)
     display.update(body)
-    time.sleep(0.7)
+    time.sleep(1.0)
 
 progress.remove_task(train_bar)
 display.stop()

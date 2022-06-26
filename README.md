@@ -37,19 +37,19 @@ from clhive.scenarios import ClassIncremental
 from clhive.models import ContinualModel
 from clhive.methods import auto_method
 
-dataset = SplitCIFAR10(root="../cl-datasets/data/")
-scenario = ClassIncremental(dataset=dataset, n_tasks=5, batch_size=32)
+train_dataset = SplitCIFAR10(root="../cl-datasets/data/", train=True)
+train_scenario = ClassIncremental(dataset=dataset, n_tasks=5, batch_size=32)
 
 print(
-  f"Number of tasks: {scenario.n_tasks} | Number of classes: {scenario.n_classes}"
+  f"Number of tasks: {train_scenario.n_tasks} | Number of classes: {train_scenario.n_classes}"
 )
 
-model = ContinualModel.auto_model("resnet18", scenario, image_size=32)
+model = ContinualModel.auto_model("resnet18", train_scenario, image_size=32)
 agent = auto_method(
     name="finetuning", model=model, optim=SGD(model.parameters(), lr=0.01)
 )
 
-for task_id, train_loader in enumerate(scenario):
+for task_id, train_loader in enumerate(train_scenario):
     for x, y, t in train_loader:
         # Do your cool stuff here
         loss = agent.observe(x, y, t)
@@ -61,9 +61,31 @@ Instead of iterating over all tasks manually, you can easily use *clhive.Trainer
 ```python
 from clhive import Trainer
 
-trainer = Trainer(method=agent, scenario=scenario, n_epochs=5, accelerator="gpu")
+trainer = Trainer(method=agent, scenario=train_scenario, n_epochs=5, accelerator="gpu")
 trainer.fit()
 ```
+
+Similar to the `Trainer` class, `clhive.utils.evaluators` package offers several evaluators, *e.g.*  ContinualEvaluator and ProbeEvaluator.
+
+```python
+from clhive.utils.evaluators import ContinualEvaluator, ProbeEvaluator
+
+test_dataset = SplitCIFAR10(root="../cl-datasets/data/", train=False)
+test_scenario = ClassIncremental(test_dataset, n_tasks=5, batch_size=32, n_workers=6)
+
+evaluator = ContinualEvaluator(method=agent, scenario=test_scenario, accelerator="gpu")
+evaluator.fit()
+```
+
+Evaluators can also be passed to `Trainer` for automatic evaluation after each task.
+
+```python
+trainer = Trainer(
+    method=agent, scenario=scenario, n_epochs=5, evaluator=evaluator, accelerator="gpu"
+)
+trainer.fit()
+```
+
 
 ### Command-Line Interface
 

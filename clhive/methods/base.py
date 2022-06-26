@@ -99,9 +99,9 @@ class BaseMethod(nn.Module):
         raise NotImplementedError
 
     def predict(self, x: torch.FloatTensor, t: torch.FloatTensor) -> torch.FloatTensor:
-        if task_id is None:
-            task_id = 0
-        return self.model(data, task_id)
+        if t is None:
+            t = 0
+        return self.model(x, t)
 
     def on_task_start(self):
         """Callback executed at the start of each task."""
