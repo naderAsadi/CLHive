@@ -5,69 +5,67 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
-import torch.nn.functional as F
 from torch.utils.data import DataLoader
+import torch.nn.functional as F
 
+from .base import BaseEvaluator
+from ...loggers import BaseLogger, Logger
 from ...methods import BaseMethod
 from ...models import ContinualModel, LinearClassifier
-from ...utils.evaluators import ContinualEvaluator
+from ...scenarios import ClassIncremental, TaskIncremental
 
 
-class ProbeEvaluator(ContinualEvaluator):
+class ProbeEvaluator(BaseEvaluator):
     def __init__(
         self,
         method: BaseMethod,
-        train_loader: DataLoader,
-        test_loader: DataLoader,
-        config: Dict[str, Any],
-        logger,
-    ) -> None:
+        train_scenario: Union[ClassIncremental, TaskIncremental],
+        eval_scenario: Union[ClassIncremental, TaskIncremental],
+        n_epochs: int,
+        logger: Optional[BaseLogger] = None,
+        accelerator: Optional[str] = "gpu",
+    ) -> "ProbeEvaluator":
 
-        super().__init__(method, test_loader, config, logger)
+        super().__init__(method, eval_scenario, logger, accelerator)
 
-        self.train_loader = train_loader
+        self.train_scenario = train_scenario
+        self.n_epochs = n_epochs
         self.linear_heads = {}
 
-    def _train_linear_heads(self, task_id):
+    def _train_linear_heads(self, task_id: int):
 
-        if self.config.eval.scenario == "multi_head":
-            probe_n_classes = self.config.data.n_classes_per_task * (task_id + 1)
+        if isinstance(self.train_scenario, TaskIncremental):
+            probe_n_classes = self.train_scenario.loader.sampler.cpt
             sample_all_seen_tasks = False
-            task_list = [*range(task_id + 1)]
+            task_list = [*range(self.train_scenario.n_tasks)]
         else:
-            probe_n_classes = self.config.data.n_classes
+            probe_n_classes = self.train_scenario.n_classes
             sample_all_seen_tasks = True
             task_list = [task_id]
 
         self.linear_heads = {
             str(t): LinearClassifier(
-                feature_dim=int(self.agent.model._model.last_hid),
-                n_classes=probe_n_classes,
+                input_size=int(self.agent.model.backbone.last_hid),
+                output_size=probe_n_classes,
             ).to(self.device)
             for t in task_list
         }
         self.agent.eval()
 
-        for task_t in task_list:
-            self.train_loader.sampler.set_task(
-                task_t, sample_all_seen_tasks=sample_all_seen_tasks
-            )
-            optim = torch.optim.SGD(
+        for task_t, train_loader in enumerate(self.train_scenario):
+
+            optim = torch.optim.AdamW(
                 self.linear_heads[str(task_t)].parameters(),
-                lr=self.config.optim.lr,
-                momentum=0.9,
-                weight_decay=0.0,
+                lr=1e-4,
+                weight_decay=5e-4,
             )
 
-            for epoch in range(self.config.eval.n_epochs):
-                for _, (x, y, t) in enumerate(self.train_loader):
-                    x, y = x.to(self.device), y.to(self.device)
+            for epoch in range(self.n_epochs):
+                for _, (x, y, t) in enumerate(train_loader):
+                    x, y, t = x.to(self.device), y.to(self.device), t.to(self.device)
 
-                    if self.config.eval.scenario == "multi_head":
-                        y -= y.min()
-
-                    with torch.no_grad():
-                        features = self.agent.model.forward_model(x)
+                    with torch.inference_mode():
+                        features = self.agent.model.forward_backbone(x)
                     logits = self.linear_heads[str(task_t)](features.detach())
                     loss = F.cross_entropy(logits, y)
 
@@ -76,47 +74,68 @@ class ProbeEvaluator(ContinualEvaluator):
                     optim.step()
 
                     print(
-                        f"Linear head {task_t} | Epoch: {epoch + 1} / {self.config.eval.n_epochs} - Training loss: {loss}",
+                        f"Linear head {task_t} | Epoch: {epoch + 1} / {self.n_epochs} - Training loss: {loss}",
                         end="\r",
                     )
 
     @torch.no_grad()
     def _evaluate(self, task_id: int):
+        """_summary_
+
+        Args:
+            task_id (int): _description_
+        """
         self.agent.eval()
+        tasks_accs = np.zeros(shape=self.eval_scenario.n_tasks)
 
-        accs = np.zeros(shape=(self.config.data.n_tasks,))
-
-        for task_t in range(task_id + 1):
-
+        for task_t, eval_loader in enumerate(self.eval_scenario):
             n_ok, n_total = 0, 0
-            self.test_loader.sampler.set_task(task_t)
 
             # iterate over samples from task
-            for i, (data, target, task) in enumerate(self.test_loader):
-
-                data, target = data.to(self.device), target.to(self.device)
+            for idx, (x, y, t) in enumerate(eval_loader):
+                x, y, t = x.to(self.device), y.to(self.device), t.to(self.device)
 
                 probe_id = task_id
-                if self.config.eval.scenario == "multi_head":
-                    target = target - task_t * self.config.data.n_classes_per_task
+                if isinstance(self.eval_scenario, TaskIncremental):
                     probe_id = task_t
 
-                features = self.agent.model.forward_model(data)
+                features = self.agent.model.forward_backbone(x)
                 logits = self.linear_heads[str(probe_id)](features)
 
-                n_total += data.size(0)
+                n_total += x.size(0)
                 if logits is not None:
                     pred = logits.max(1)[1]
-                    n_ok += pred.eq(target).sum().item()
+                    n_ok += pred.eq(y).sum().item()
 
-            accs[task_t] = (n_ok / n_total) * 100
+            tasks_accs[task_t] = (n_ok / n_total) * 100
 
-        avg_acc = np.mean(accs[: task_id + 1])
-        print("\n", "\t".join([str(int(x)) for x in accs]), f"\tAvg Acc: {avg_acc:.2f}")
+        return tasks_accs
 
-    def fit(self, task_id: int = None):
+    def on_eval_start(self):
+        """ """
+        pass
 
-        if task_id is None:
-            task_id = self.config.data.n_tasks - 1
-        self._train_linear_heads(task_id)
-        self._evaluate(task_id)
+    def on_eval_end(self, tasks_accs: List[float], current_task_id: int):
+        """ """
+        avg_acc = np.mean(tasks_accs[: current_task_id + 1])
+        print(
+            "\n",
+            "\t".join([str(int(x)) for x in tasks_accs]),
+            f"\tAvg Acc: {avg_acc:.2f}",
+        )
+
+        # Reset train_scenario
+        self.train_scenario.set_task(task_id=current_task_id + 1)
+
+    def fit(self, current_task_id: int = None):
+        """_summary_
+
+        Args:
+            current_task_id (int, optional): _description_. Defaults to None.
+        """
+        self.on_eval_start()
+
+        self._train_linear_heads(task_id=current_task_id)
+        tasks_accs = self._evaluate(task_id=current_task_id)
+
+        self.on_eval_end(tasks_accs, current_task_id)

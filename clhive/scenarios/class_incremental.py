@@ -96,3 +96,7 @@ class ClassIncremental:
             num_workers=self.n_workers,
             sampler=sampler,
         )
+
+    def set_task(self, task_id: int):
+        self._task_id = task_id
+        self.loader.sampler.set_task(self._task_id)

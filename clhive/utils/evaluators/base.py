@@ -10,7 +10,7 @@ class BaseEvaluator:
     def __init__(
         self,
         method: BaseMethod,
-        scenario: Union[ClassIncremental, TaskIncremental],
+        eval_scenario: Union[ClassIncremental, TaskIncremental],
         logger: Optional[BaseLogger] = None,
         accelerator: Optional[str] = "gpu",
     ) -> "BaseEvaluator":
@@ -18,7 +18,7 @@ class BaseEvaluator:
 
         Args:
             method (BaseMethod): _description_
-            scenario (Union[ClassIncremental, TaskIncremental]): _description_
+            eval_scenario (Union[ClassIncremental, TaskIncremental]): _description_
             logger (Optional[BaseLogger], optional): _description_. Defaults to None.
             accelerator (Optional[str], optional): _description_. Defaults to "gpu".
 
@@ -35,10 +35,10 @@ class BaseEvaluator:
             "cuda" if accelerator == "gpu" and torch.cuda.is_available() else "cpu"
         )
         self.agent = method.to(self.device)
-        self.scenario = scenario
+        self.eval_scenario = eval_scenario
 
         if logger is None:
-            logger = Logger(n_tasks=self.scenario.n_tasks)
+            logger = Logger(n_tasks=self.eval_scenario.n_tasks)
         self.logger = logger
 
     @torch.no_grad()

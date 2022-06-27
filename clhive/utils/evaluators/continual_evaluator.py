@@ -17,40 +17,43 @@ class ContinualEvaluator(BaseEvaluator):
     def __init__(
         self,
         method: BaseMethod,
-        scenario: Union[ClassIncremental, TaskIncremental],
+        eval_scenario: Union[ClassIncremental, TaskIncremental],
         logger: Optional[BaseLogger] = None,
         accelerator: Optional[str] = "gpu",
     ) -> "ContinualEvaluator":
 
-        super().__init__(method, scenario, logger, accelerator)
+        super().__init__(method, eval_scenario, logger, accelerator)
 
     @torch.no_grad()
-    def _evaluate(self, task_id: int, eval_loader: DataLoader):
+    def _evaluate(self, task_id: int):
         """_summary_
 
         Args:
             task_id (int): _description_
-            eval_loader (DataLoader): _description_
 
         Returns:
             _type_: _description_
         """
         self.agent.eval()
-        n_ok, n_total = 0, 0
-        # iterate over samples from task
-        for idx, (x, y, t) in enumerate(eval_loader):
-            x, y, t = x.to(self.device), y.to(self.device), t.to(self.device)
+        tasks_accs = np.zeros(shape=self.eval_scenario.n_tasks)
 
-            logits = self.agent.predict(x=x, t=t)
+        for task_id, eval_loader in enumerate(self.eval_scenario):
+            n_ok, n_total = 0, 0
 
-            n_total += x.size(0)
-            if logits is not None:
-                pred = logits.max(1)[1]
-                n_ok += pred.eq(y).sum().item()
+            # iterate over samples from task
+            for idx, (x, y, t) in enumerate(eval_loader):
+                x, y, t = x.to(self.device), y.to(self.device), t.to(self.device)
 
-        task_acc = (n_ok / n_total) * 100
+                logits = self.agent.predict(x=x, t=t)
 
-        return task_acc
+                n_total += x.size(0)
+                if logits is not None:
+                    pred = logits.max(1)[1]
+                    n_ok += pred.eq(y).sum().item()
+
+            tasks_accs[task_id] = (n_ok / n_total) * 100
+
+        return tasks_accs
 
     def on_eval_start(self):
         """ """
@@ -73,8 +76,6 @@ class ContinualEvaluator(BaseEvaluator):
         """
         self.on_eval_start()
 
-        tasks_accs = np.zeros(shape=self.scenario.n_tasks)
-        for task_id, eval_loader in enumerate(self.scenario):
-            tasks_accs[task_id] = self._evaluate(task_id, eval_loader)
+        tasks_accs = self._evaluate(task_id=current_task_id)
 
         self.on_eval_end(tasks_accs=tasks_accs, current_task_id=current_task_id)
