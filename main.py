@@ -15,10 +15,10 @@ print(f"Number of tasks: {scenario.n_tasks} | Number of classes: {scenario.n_cla
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-model = ContinualModel.auto_model("resnet18", scenario, image_size=128).to(device)
+model = ContinualModel.auto_model("resnet18", scenario, image_size=32).to(device)
 
 agent = auto_method(
-    name="finetuning", model=model, optim=AdamW(model.parameters(), lr=1e-5)
+    name="finetuning", model=model, optim=AdamW(model.parameters(), lr=1e-5, weight_decay=5e-4)
 )
 
 test_dataset = SplitCIFAR100(root="../cl-datasets/data/", train=False)

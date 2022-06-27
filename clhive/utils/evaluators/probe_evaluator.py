@@ -64,7 +64,7 @@ class ProbeEvaluator(BaseEvaluator):
                 for _, (x, y, t) in enumerate(train_loader):
                     x, y, t = x.to(self.device), y.to(self.device), t.to(self.device)
 
-                    with torch.inference_mode():
+                    with torch.no_grad():
                         features = self.agent.model.forward_backbone(x)
                     logits = self.linear_heads[str(task_t)](features.detach())
                     loss = F.cross_entropy(logits, y)
