@@ -13,21 +13,40 @@
 - [DER, 2020](https://arxiv.org/abs/2004.07211)
 - [ER-ACE/ER-AML, 2022](https://arxiv.org/abs/2203.03798)
 
-## How To Use
-
-With *clhive* you can use latest continual learning methods in a modular way using the full power of PyTorch. Experiment with different backbones, models and loss functions. The framework has been designed to be easy to use from the ground up.
+## Installation
 
 ### Dependencies
 
 CLHive requires **Python 3.6+**.
 
-- fvcore
+- fvcore>=0.1.5
 - hydra-core>=1.0.0
-- numpy>=1.18.1
-- pytorch
-- rich
-- torchvision
-- wandb
+- kornia>=0.6.5
+- numpy>=1.22.4
+- rich>=12.4.4
+- pytorch>=1.12.0
+- torchvision>=0.13.0
+- wandb>=0.12.19
+
+### PyPI Installation
+You can install Lightly and its dependencies from PyPI with:
+```
+pip install clhive
+```
+
+### Manual Installation
+It is strongly recommend that you install CLHive in a dedicated virtualenv, to avoid conflicting with your system packages.
+
+```
+git clone https://github.com/naderAsadi/CLHive.git
+cd CLHive
+pip install -e .
+```
+
+
+## How To Use
+
+With `clhive` you can use latest continual learning methods in a modular way using the full power of PyTorch. Experiment with different backbones, models and loss functions. The framework has been designed to be easy to use from the ground up.
 
 ### Quick Start
 
