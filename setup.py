@@ -10,7 +10,6 @@ except ImportError:
 PATH_ROOT = PATH_ROOT = os.path.dirname(__file__)
 builtins.__clhive_SETUP__ = True
 
-import clhive
 
 def load_description(path_dir=PATH_ROOT, filename='README.md'):
     """Load long description from readme in the path_dir/ directory
@@ -20,38 +19,26 @@ def load_description(path_dir=PATH_ROOT, filename='README.md'):
     return long_description
 
 
-def load_requirements(path_dir=PATH_ROOT, filename='base.txt', comment_char='#'):
-    """From pytorch-lightning repo: https://github.com/PyTorchLightning/pytorch-lightning.
-       Load requirements from text file in the path_dir/requirements/ directory.
+def load_requirements(path_dir=PATH_ROOT, filename='requirements.txt'):
+    """Load requirements from text file in the path_dir/requirement.txt
     """
-    with open(os.path.join(path_dir, 'requirements', filename), 'r') as file:
-        lines = [ln.strip() for ln in file.readlines()]
-    reqs = []
-    for ln in lines:
-        # filer all comments
-        if comment_char in ln:
-            ln = ln[:ln.index(comment_char)].strip()
-        # skip directly installed dependencies
-        if ln.startswith('http'):
-            continue
-        if ln:  # if requirement is not empty
-            reqs.append(ln)
-    return reqs
+    print(os.path.join(path_dir, filename))
+    with open(os.path.join(path_dir, filename), 'r') as f:
+        packages = f.read().splitlines()
+    return packages
 
 
 if __name__ == '__main__':
     
-    name = 'clhive'
-    version = clhive.__version__
-    description = clhive.__doc__
-
+    name = "clhive"
+    version = "0.1.0"
+    description = "CLHive is a PyTorch framework for Continual Learning research."
     author = 'Nader Asadi'
     author_email = 'asadi.nader97@gmail.com'
-    description = "A PyTorch framework for Continual Learning research"
-    long_description = load_description()
 
     python_requires = '>=3.6'
     install_requires = load_requirements()
+    print(install_requires)
 
     project_urls = {
         'Github': 'https://github.com/naderasadi/CLHive',
@@ -82,7 +69,6 @@ if __name__ == '__main__':
         author_email=author_email,
         description=description,
         license='MIT',
-        long_description=long_description,
         long_description_content_type='text/markdown',
         install_requires=install_requires,
         python_requires=python_requires,
