@@ -22,7 +22,6 @@ def load_description(path_dir=PATH_ROOT, filename='README.md'):
 def load_requirements(path_dir=PATH_ROOT, filename='requirements.txt'):
     """Load requirements from text file in the path_dir/requirement.txt
     """
-    print(os.path.join(path_dir, filename))
     with open(os.path.join(path_dir, filename), 'r') as f:
         packages = f.read().splitlines()
     return packages
@@ -38,7 +37,6 @@ if __name__ == '__main__':
 
     python_requires = '>=3.6'
     install_requires = load_requirements()
-    print(install_requires)
 
     project_urls = {
         'Github': 'https://github.com/naderasadi/CLHive',
