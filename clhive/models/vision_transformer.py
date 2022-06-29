@@ -75,7 +75,7 @@ class Transformer(nn.Module):
 class VisualTransformer(nn.Module):
     def __init__(
         self,
-        image_size: int = 224,
+        input_size: int = 224,
         patch_size: int = 16,
         in_channels: int = 3,
         embed_dim: int = 768,
@@ -87,7 +87,7 @@ class VisualTransformer(nn.Module):
 
         super().__init__()
 
-        self.image_size = image_size
+        self.input_size = input_size
         self.output_dim = output_dim
         self.conv1 = nn.Conv2d(
             in_channels=in_channels,
@@ -98,7 +98,7 @@ class VisualTransformer(nn.Module):
         )
 
         scale = embed_dim ** -0.5
-        self.num_patches = (image_size // patch_size) ** 2
+        self.num_patches = (input_size // patch_size) ** 2
 
         self.class_embedding = nn.Parameter(scale * torch.randn(embed_dim))
         self.positional_embedding = nn.Parameter(
@@ -151,14 +151,11 @@ class VisualTransformer(nn.Module):
 
 @register_model("vit_tiny_patch16")
 def vit_tiny_patch16(
-    image_size: Optional[int] = 224,
-    output_dim: Optional[int] = 512,
-    pretrained: Optional[bool] = False,
-    **kwargs
+    input_size: Optional[int] = 224, output_dim: Optional[int] = 512, **kwargs
 ):
     """ViT-Tiny (Vit-Ti/16)"""
     return VisualTransformer(
-        image_size=image_size,
+        input_size=input_size,
         patch_size=16,
         embed_dim=192,
         n_layers=12,
@@ -170,14 +167,11 @@ def vit_tiny_patch16(
 
 @register_model("vit_small_patch16")
 def vit_small_patch16(
-    image_size: Optional[int] = 224,
-    output_dim: Optional[int] = 512,
-    pretrained: Optional[bool] = False,
-    **kwargs
+    input_size: Optional[int] = 224, output_dim: Optional[int] = 512, **kwargs
 ):
     """ViT-Small (ViT-S/16)"""
     return VisualTransformer(
-        image_size=image_size,
+        input_size=input_size,
         patch_size=16,
         embed_dim=384,
         n_layers=12,
@@ -189,14 +183,11 @@ def vit_small_patch16(
 
 @register_model("vit_small_patch32")
 def vit_small_patch32(
-    image_size: Optional[int] = 224,
-    output_dim: Optional[int] = 512,
-    pretrained: Optional[bool] = False,
-    **kwargs
+    input_size: Optional[int] = 224, output_dim: Optional[int] = 512, **kwargs
 ):
     """ViT-Small (ViT-S/32)"""
     return VisualTransformer(
-        image_size=image_size,
+        input_size=input_size,
         patch_size=32,
         embed_dim=384,
         n_layers=12,
@@ -208,16 +199,13 @@ def vit_small_patch32(
 
 @register_model("vit_base_patch16")
 def vit_base_patch16(
-    image_size: Optional[int] = 224,
-    output_dim: Optional[int] = 512,
-    pretrained: Optional[bool] = False,
-    **kwargs
+    input_size: Optional[int] = 224, output_dim: Optional[int] = 512, **kwargs
 ):
     """ViT-Base (ViT-B/16) from original paper (https://arxiv.org/abs/2010.11929).
     ImageNet-1k weights fine-tuned from in21k @ 224x224, source https://github.com/google-research/vision_transformer.
     """
     return VisualTransformer(
-        image_size=image_size,
+        input_size=input_size,
         patch_size=16,
         embed_dim=768,
         n_layers=12,
@@ -229,16 +217,13 @@ def vit_base_patch16(
 
 @register_model("vit_base_patch32")
 def vit_base_patch32(
-    image_size: Optional[int] = 224,
-    output_dim: Optional[int] = 512,
-    pretrained: Optional[bool] = False,
-    **kwargs
+    input_size: Optional[int] = 224, output_dim: Optional[int] = 512, **kwargs
 ):
     """ViT-Base (ViT-B/32) from original paper (https://arxiv.org/abs/2010.11929).
     ImageNet-1k weights fine-tuned from in21k, source https://github.com/google-research/vision_transformer.
     """
     return VisualTransformer(
-        image_size=image_size,
+        input_size=input_size,
         patch_size=32,
         embed_dim=768,
         n_layers=12,
@@ -250,14 +235,11 @@ def vit_base_patch32(
 
 @register_model("vit_large_patch14")
 def vit_large_patch14(
-    image_size: Optional[int] = 224,
-    output_dim: Optional[int] = 512,
-    pretrained: Optional[bool] = False,
-    **kwargs
+    input_size: Optional[int] = 224, output_dim: Optional[int] = 512, **kwargs
 ):
     """ViT-Large model (ViT-L/14)"""
     return VisualTransformer(
-        image_size=image_size,
+        input_size=input_size,
         patch_size=14,
         embed_dim=1024,
         n_layers=24,
@@ -269,17 +251,14 @@ def vit_large_patch14(
 
 @register_model("vit_large_patch16")
 def vit_large_patch16(
-    image_size: Optional[int] = 224,
-    output_dim: Optional[int] = 512,
-    pretrained: Optional[bool] = False,
-    **kwargs
+    input_size: Optional[int] = 224, output_dim: Optional[int] = 512, **kwargs
 ):
     """ViT-Large model (ViT-L/16) from original paper (https://arxiv.org/abs/2010.11929).
     ImageNet-1k weights fine-tuned from in21k @ 224x224, source https://github.com/google-research/vision_transformer.
     """
 
     return VisualTransformer(
-        image_size=image_size,
+        input_size=input_size,
         patch_size=16,
         embed_dim=1024,
         n_layers=24,
@@ -291,14 +270,11 @@ def vit_large_patch16(
 
 @register_model("vit_large_patch32")
 def vit_large_patch32(
-    image_size: Optional[int] = 224,
-    output_dim: Optional[int] = 512,
-    pretrained: Optional[bool] = False,
-    **kwargs
+    input_size: Optional[int] = 224, output_dim: Optional[int] = 512, **kwargs
 ):
     """ViT-Large model (ViT-L/32) from original paper (https://arxiv.org/abs/2010.11929). No pretrained weights."""
     return VisualTransformer(
-        image_size=image_size,
+        input_size=input_size,
         patch_size=32,
         embed_dim=1024,
         n_layers=24,
@@ -310,14 +286,11 @@ def vit_large_patch32(
 
 @register_model("vit_huge_patch14")
 def vit_huge_patch14(
-    image_size: Optional[int] = 224,
-    output_dim: Optional[int] = 512,
-    pretrained: Optional[bool] = False,
-    **kwargs
+    input_size: Optional[int] = 224, output_dim: Optional[int] = 512, **kwargs
 ):
     """ViT-Huge model (ViT-H/14) from original paper (https://arxiv.org/abs/2010.11929)."""
     return VisualTransformer(
-        image_size=image_size,
+        input_size=input_size,
         patch_size=14,
         embed_dim=1280,
         n_layers=32,
@@ -329,14 +302,11 @@ def vit_huge_patch14(
 
 @register_model("vit_giant_patch14")
 def vit_giant_patch14(
-    image_size: Optional[int] = 224,
-    output_dim: Optional[int] = 512,
-    pretrained: Optional[bool] = False,
-    **kwargs
+    input_size: Optional[int] = 224, output_dim: Optional[int] = 512, **kwargs
 ):
     """ViT-Giant model (ViT-g/14) from `Scaling Vision Transformers` - https://arxiv.org/abs/2106.04560"""
     return VisualTransformer(
-        image_size=image_size,
+        input_size=input_size,
         patch_size=14,
         embed_dim=1408,
         n_layers=40,

@@ -55,9 +55,7 @@ class ProbeEvaluator(BaseEvaluator):
         for task_t, train_loader in enumerate(self.train_scenario):
 
             optim = torch.optim.AdamW(
-                self.linear_heads[str(task_t)].parameters(),
-                lr=1e-4,
-                weight_decay=5e-4,
+                self.linear_heads[str(task_t)].parameters(), lr=1e-4, weight_decay=5e-4,
             )
 
             for epoch in range(self.n_epochs):

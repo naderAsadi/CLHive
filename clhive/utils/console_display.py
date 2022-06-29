@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from rich import box
 from rich.console import Console
@@ -19,6 +19,7 @@ class ConsoleDisplay:
     def __init__(
         self,
         n_tasks: int,
+        progress_metrics_columns: Optional[Dict[str, Any]] = None,
         primary_style: Optional[str] = "light_goldenrod3",
         accent_style: Optional[str] = "dark_sea_green4",
         secondary_accent_style: Optional[str] = "",
@@ -30,15 +31,13 @@ class ConsoleDisplay:
 
         self.console = Console(theme=self.theme)
         self.table = self.create_metrics_table(n_tasks)
-        self.progress, self.columns = self.create_progress(
-            description="Task 0 Training"
-        )
+        self.create_progress(metrics_columns=progress_metrics_columns)
         self.progress_bar = None
 
         self.body = Table.grid(expand=True)
         self.body.add_row(self.table)
         self.body.add_row(self.progress)
-        self.display = Live(self.body, refresh_per_second=4)
+        self.display = Live(self.body, refresh_per_second=10)
 
     def start(self):
         self.display.start()
@@ -59,13 +58,13 @@ class ConsoleDisplay:
         return table
 
     def create_progress(
-        self, description: str, metrics_columns: Optional[Dict[str, str]] = None,
+        self, metrics_columns: Optional[Dict[str, Any]] = None,
     ):
 
         main_columns = {}
 
         main_columns["spinner"] = SpinnerColumn()
-        main_columns["description"] = TextColumn(description)
+        main_columns["description"] = TextColumn("{task.description}")
         main_columns["seperator"] = TextColumn("|")
         main_columns["dot"] = TextColumn("•")
         main_columns["epoch"] = TextColumn("Epoch")
@@ -86,9 +85,8 @@ class ConsoleDisplay:
                 main_columns[key] = TextColumn(text_format=metrics_columns[key])
                 columns.extend([main_columns["seperator"], main_columns[key]])
 
-        progress = Progress(*columns)
-
-        return progress, main_columns
+        self.columns = main_columns
+        self.progress = Progress(*columns)
 
     def add_progress_bar(self, description: str, total_steps: int):
         """_summary_
@@ -119,10 +117,13 @@ class ConsoleDisplay:
         self,
         epoch: int,
         advance: Optional[int] = 1,
-        metrics_columns: Optional[Dict[str, str]] = None,
+        metrics_columns: Optional[Dict[str, Any]] = None,
     ):
 
         self.columns["epoch"].text_format = f"Epoch: {epoch}"
+        for key, value in metrics_columns.items():
+            self.columns[key].text_format = f"{key}: {str(value)}"
+
         self.progress.update(self.progress_bar, advance=advance)
         self.display.update(self.body)
 
@@ -134,7 +135,6 @@ class ConsoleDisplay:
 if __name__ == "__main__":
     import time
 
-    display = ConsoleDisplay(n_tasks=5)
     stats = [
         [50, 60, 70, 80, 90],
         [50, 60, 70, 80, 90],
@@ -142,14 +142,23 @@ if __name__ == "__main__":
         [50, 60, 70, 80, 90],
         [50, 60, 70, 80, 90],
     ]
+    progress_metrics = {"train/loss": 50.0}
+
+    display = ConsoleDisplay(n_tasks=5, progress_metrics_columns=progress_metrics)
+    # display.create_progress(metrics_columns={"train/loss": 100.0})
 
     display.start()
     for t in range(5):
-        display.add_progress_bar(description=f"Task {t} Training", total_steps=120)
+        display.add_progress_bar(
+            description=f"Task {t} Training", total_steps=2 * 100,
+        )
         for e in range(2):
-            for i in range(120):
+            for i in range(100):
                 time.sleep(0.01)
-                display.update_progress_bar(epoch=e, advance=1)
+                progress_metrics["train/loss"] -= 0.5
+                display.update_progress_bar(
+                    epoch=e, advance=1, metrics_columns=progress_metrics
+                )
 
         display.update_table(metrics=[t, *stats[t], 70.0, 0.0])
 
