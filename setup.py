@@ -67,6 +67,7 @@ if __name__ == "__main__":
         author_email=author_email,
         description=description,
         license="MIT",
+        long_description=load_description(),
         long_description_content_type="text/markdown",
         install_requires=install_requires,
         python_requires=python_requires,
