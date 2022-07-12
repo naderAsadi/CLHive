@@ -80,9 +80,7 @@ To create a replay buffer for rehearsal-based methods, *e.g.* ER, you can use `c
 ```python
 from clhive import ReplayBuffer
 
-buffer = ReplayBuffer(
-    capacity=20 * 10, input_size=32, input_n_channels=3
-)
+buffer = ReplayBuffer(capacity=20 * 10, input_size=32, input_n_channels=3)
 agent = auto_method(
     name="er",
     model=model,
