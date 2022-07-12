@@ -69,6 +69,6 @@ def get_dataset(config, *args, **kwargs):
 import_all_modules(FILE_ROOT, "clhive.data")
 
 # import transforms
-from .buffer import Buffer
+from .buffer import ReplayBuffer
 from .cifar import SplitCIFAR10, SplitCIFAR100
 from .mnist import SeqMNIST
