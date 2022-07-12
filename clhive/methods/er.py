@@ -1,9 +1,9 @@
 from typing import Any, List, Optional, Tuple, Union
-
 import torch
 
 from . import register_method, BaseMethod
 from ..data import ReplayBuffer
+from ..loggers import BaseLogger
 from ..models import ContinualModel
 
 
@@ -13,13 +13,27 @@ class ER(BaseMethod):
         self,
         model: Union[ContinualModel, torch.nn.Module],
         optim: torch.optim,
-        logger=None,
-    ) -> None:
-        super().__init__(config, model, logger, transform, optim)
+        buffer: ReplayBuffer,
+        logger: Optional[BaseLogger] = None,
+        n_replay_samples: Optional[int] = None,
+        **kwargs,
+    ) -> "ER":
+        """_summary_
 
-        self.buffer = ReplayBuffer(
-            self.config.data.mem_size, self.config.data.image_size
-        )
+        Args:
+            model (Union[ContinualModel, torch.nn.Module]): _description_
+            optim (torch.optim): _description_
+            buffer (ReplayBuffer): _description_
+            logger (Optional[BaseLogger], optional): _description_. Defaults to None.
+            n_replay_samples (Optional[int], optional): _description_. Defaults to None.
+
+        Returns:
+            ER: _description_
+        """
+        super().__init__(model, optim, logger)
+
+        self.buffer = buffer
+        self.n_replay_samples = n_replay_samples
         self.loss = torch.nn.CrossEntropyLoss()
 
     @property
@@ -37,10 +51,18 @@ class ER(BaseMethod):
 
         re_loss = 0
         if len(self.buffer) > 0:
-            re_data = self.buffer.sample({"amt": 20, "exclude_task": None,})
-            re_loss = self.process(*re_data)
+
+            if self.n_replay_samples is None:
+                self.n_replay_samples = x.size(0)
+
+            re_data = self.buffer.sample(n_samples=self.n_replay_samples)
+            re_loss = self.process(
+                x=re_data["data_buffer"],
+                y=re_data["targets_buffer"],
+                t=re_data["task_ids_buffer"],
+            )
 
         self.update(inc_loss + re_loss)
-        self.buffer.add(data)
+        self.buffer.add(data=x, targets=y, task_ids=t)
 
         return inc_loss + re_loss

@@ -1,39 +1,54 @@
 import torch
 from torch.optim import SGD, AdamW
 
-from clhive.data import SplitCIFAR100
+from clhive.data import SplitCIFAR10
 from clhive.utils.evaluators import ContinualEvaluator, ProbeEvaluator
 from clhive.scenarios import ClassIncremental, TaskIncremental
 from clhive.models import ContinualModel
 from clhive.methods import auto_method
-from clhive import Trainer
+from clhive import Trainer, ReplayBuffer
 
-dataset = SplitCIFAR100(root="../cl-datasets/data/")
-scenario = TaskIncremental(dataset=dataset, n_tasks=10, batch_size=128, n_workers=6)
+
+# HParams
+batch_size = 32
+n_tasks = 5
+image_size = 32
+input_n_channels = 3
+buffer_capacity = 50 * 100
+
+
+dataset = SplitCIFAR10(root="../cl-datasets/data/")
+scenario = ClassIncremental(
+    dataset=dataset, n_tasks=n_tasks, batch_size=batch_size, n_workers=6
+)
 
 print(f"Number of tasks: {scenario.n_tasks} | Number of classes: {scenario.n_classes}")
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-model = ContinualModel.auto_model("resnet18", scenario, image_size=32).to(device)
-
-agent = auto_method(
-    name="finetuning",
-    model=model,
-    optim=AdamW(model.parameters(), lr=1e-5, weight_decay=5e-4),
+model = ContinualModel.auto_model("resnet18", scenario, image_size=image_size).to(
+    device
 )
 
-test_dataset = SplitCIFAR100(root="../cl-datasets/data/", train=False)
-test_scenario = TaskIncremental(test_dataset, n_tasks=10, batch_size=128, n_workers=6)
-evaluator = ProbeEvaluator(
-    method=agent,
-    train_scenario=scenario,
-    eval_scenario=test_scenario,
-    n_epochs=5,
-    accelerator="gpu",
+buffer = ReplayBuffer(
+    capacity=buffer_capacity, input_size=image_size, input_n_channels=input_n_channels
+).to(device)
+agent = auto_method(
+    name="er",
+    model=model,
+    optim=SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=1e-4),
+    buffer=buffer,
+)
+
+test_dataset = SplitCIFAR10(root="../cl-datasets/data/", train=False)
+test_scenario = ClassIncremental(
+    test_dataset, n_tasks=n_tasks, batch_size=batch_size, n_workers=6
+)
+evaluator = ContinualEvaluator(
+    method=agent, eval_scenario=test_scenario, accelerator="gpu"
 )
 
 trainer = Trainer(
-    method=agent, scenario=scenario, n_epochs=5, evaluator=evaluator, accelerator="gpu"
+    method=agent, scenario=scenario, evaluator=evaluator, n_epochs=5, accelerator="gpu"
 )
 trainer.fit()

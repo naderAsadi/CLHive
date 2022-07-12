@@ -2,6 +2,7 @@ from typing import Any, List, Optional, Tuple, Union
 import torch
 
 from . import register_method, BaseMethod
+from ..loggers import BaseLogger
 from ..models import ContinualModel
 
 
@@ -11,8 +12,9 @@ class FineTuning(BaseMethod):
         self,
         model: Union[ContinualModel, torch.nn.Module],
         optim: torch.optim,
-        logger=None,
-    ) -> None:
+        logger: Optional[BaseLogger] = None,
+        **kwargs,
+    ) -> "FineTuning":
         super().__init__(model, optim, logger)
 
         self.loss = torch.nn.CrossEntropyLoss()

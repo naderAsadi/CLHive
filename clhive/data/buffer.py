@@ -23,7 +23,7 @@ class ReplayBuffer(nn.Module):
         self.n_seen_so_far = 0
 
         self.registered_buffers = ["data_buffer", "targets_buffer", "task_ids_buffer"]
-        
+
         shape = (self.capacity, input_n_channels, input_size, input_size)
         self._create_buffers(
             batch={
@@ -208,16 +208,16 @@ class ReplayBuffer(nn.Module):
         self,
         n_samples: int,
         task_id: Optional[int] = None,
-        exclude_task: Optional[int] = None,
+        exclude_task_id: Optional[int] = None,
         **kwargs,
     ) -> Dict[str, torch.FloatTensor]:
         buffers = OrderedDict()
 
-        if exclude_task is not None:
+        if exclude_task_id is not None:
             assert hasattr(self, "task_ids_buffer")
 
             valid_indices = torch.where(
-                getattr(self, "task_ids_buffer") != exclude_task
+                getattr(self, "task_ids_buffer") != exclude_task_id
             )[0]
             valid_indices = valid_indices[valid_indices < self.current_index]
             for buffer_name in self.registered_buffers:
@@ -249,15 +249,17 @@ class ReplayBuffer(nn.Module):
         self,
         n_samples: int,
         task_id: Optional[int] = None,
-        exclude_task: Optional[int] = None,
+        exclude_task_id: Optional[int] = None,
         **kwargs,
     ) -> Dict[str, torch.FloatTensor]:
         buffers = OrderedDict()
 
-        if exclude_task is not None:
+        if exclude_task_id is not None:
             assert hasattr(self, "task_ids_buffer")
             valid_indices = (
-                (getattr(self, "task_ids_buffer") != exclude_task).nonzero().squeeze()
+                (getattr(self, "task_ids_buffer") != exclude_task_id)
+                .nonzero()
+                .squeeze()
             )
             for buffer_name in self.registered_buffers:
                 buffers[buffer_name] = getattr(self, buffer_name)[valid_indices]

@@ -7,6 +7,7 @@ import torch.nn as nn
 from fvcore.nn import FlopCountAnalysis, flop_count_table
 
 from ..config import Config
+from ..loggers import BaseLogger
 from ..models import ContinualModel
 from ..utils import get_optimizer
 
@@ -17,8 +18,22 @@ class BaseMethod(nn.Module):
     """
 
     def __init__(
-        self, model: Union[ContinualModel, nn.Module], optim: torch.optim, logger=None,
-    ) -> None:
+        self,
+        model: Union[ContinualModel, nn.Module],
+        optim: torch.optim,
+        logger: Optional[BaseLogger] = None,
+        **kwargs,
+    ) -> "BaseMethod":
+        """_summary_
+
+        Args:
+            model (Union[ContinualModel, nn.Module]): _description_
+            optim (torch.optim): _description_
+            logger (Optional[BaseLogger], optional): _description_. Defaults to None.
+
+        Returns:
+            BaseMethod: _description_
+        """
 
         super(BaseMethod, self).__init__()
 
