@@ -22,13 +22,14 @@ class ReplayBuffer(nn.Module):
         self.current_index = 0
         self.n_seen_so_far = 0
 
-        shape = (self.capacity, input_n_channels, input_size, input_size)
         self.registered_buffers = ["data_buffer", "targets_buffer", "task_ids_buffer"]
+        
+        shape = (self.capacity, input_n_channels, input_size, input_size)
         self._create_buffers(
             batch={
-                self.registered_buffers[0]: torch.empty(*shape, dtype=torch.float32),
-                self.registered_buffers[1]: torch.empty(1, dtype=torch.int64),
-                self.registered_buffers[2]: torch.empty(1, dtype=torch.int64),
+                "data_buffer": torch.empty(*shape, dtype=torch.float32),
+                "targets_buffer": torch.empty(1, dtype=torch.int64),
+                "task_ids_buffer": torch.empty(1, dtype=torch.int64),
             }
         )
 
@@ -44,7 +45,7 @@ class ReplayBuffer(nn.Module):
             buffer = getattr(self, name)
 
             if buffer.dtype == torch.float32:
-                bits_per_item = 8 if name == "bx" else 32
+                bits_per_item = 8 if name == "data_buffer" else 32
             elif buffer.dtype == torch.int64:
                 bits_per_item = buffer.max().float().log2().clamp_(min=1).int().item()
 
@@ -62,9 +63,9 @@ class ReplayBuffer(nn.Module):
         task_ids: torch.FloatTensor,
     ) -> Dict[str, torch.FloatTensor]:
         return {
-            self.registered_buffers[0]: data,
-            self.registered_buffers[1]: targets,
-            self.registered_buffers[2]: task_ids,
+            "data_buffer": data,
+            "targets_buffer": targets,
+            "task_ids_buffer": task_ids,
         }
 
     def _create_buffers(self, batch: Dict[str, torch.FloatTensor]) -> None:
@@ -97,7 +98,7 @@ class ReplayBuffer(nn.Module):
     ) -> None:
         batch = self._get_batch(data, targets, task_ids)
 
-        n_elem = batch[self.registered_buffers[0]].size(0)
+        n_elem = batch["data_buffer"].size(0)
 
         place_left = max(0, self.capacity - self.current_index)
 
@@ -135,7 +136,7 @@ class ReplayBuffer(nn.Module):
     ) -> None:
         batch = self._get_batch(data, targets, task_ids)
 
-        n_elem = batch[self.registered_buffers[0]].size(0)
+        n_elem = batch["data_buffer"].size(0)
 
         # increment first
         self.n_seen_so_far += n_elem
@@ -197,9 +198,7 @@ class ReplayBuffer(nn.Module):
             self.queue_ptr = 0
 
         start_idx = self.queue_ptr
-        end_idx = (
-            start_idx + batch[self.registered_buffers[0]].size(0)
-        ) % self.capacity
+        end_idx = (start_idx + batch["data_buffer"].size(0)) % self.capacity
 
         for name, data in batch.items():
             buffer = getattr(self, name)
@@ -215,19 +214,17 @@ class ReplayBuffer(nn.Module):
         buffers = OrderedDict()
 
         if exclude_task is not None:
-            assert hasattr(self, self.registered_buffers[2])
+            assert hasattr(self, "task_ids_buffer")
 
             valid_indices = torch.where(
-                getattr(self, self.registered_buffers[2]) != exclude_task
+                getattr(self, "task_ids_buffer") != exclude_task
             )[0]
             valid_indices = valid_indices[valid_indices < self.current_index]
             for buffer_name in self.registered_buffers:
                 buffers[buffer_name] = getattr(self, buffer_name)[valid_indices]
 
         elif task_id is not None:
-            valid_indices = torch.where(
-                getattr(self, self.registered_buffers[2]) == task_id
-            )[0]
+            valid_indices = torch.where(getattr(self, "task_ids_buffer") == task_id)[0]
             valid_indices = valid_indices[valid_indices < self.current_index]
             for buffer_name in self.registered_buffers:
                 buffers[buffer_name] = getattr(self, buffer_name)[valid_indices]
@@ -236,13 +233,13 @@ class ReplayBuffer(nn.Module):
             for buffer_name in self.registered_buffers:
                 buffers[buffer_name] = getattr(self, buffer_name)[: self.current_index]
 
-        n_selected = buffers[self.registered_buffers[0]].size(0)
+        n_selected = buffers["data_buffer"].size(0)
         if n_selected <= n_samples:
             assert n_selected > 0
             return buffers
         else:
             idx_np = np.random.choice(
-                buffers[self.registered_buffers[0]].size(0), n_samples, replace=False
+                buffers["data_buffer"].size(0), n_samples, replace=False
             )
             indices = torch.from_numpy(idx_np)  # .to(self.bx.device)
 
@@ -258,11 +255,9 @@ class ReplayBuffer(nn.Module):
         buffers = OrderedDict()
 
         if exclude_task is not None:
-            assert hasattr(self, self.registered_buffers[2])
+            assert hasattr(self, "task_ids_buffer")
             valid_indices = (
-                (getattr(self, self.registered_buffers[2]) != exclude_task)
-                .nonzero()
-                .squeeze()
+                (getattr(self, "task_ids_buffer") != exclude_task).nonzero().squeeze()
             )
             for buffer_name in self.registered_buffers:
                 buffers[buffer_name] = getattr(self, buffer_name)[valid_indices]
@@ -270,11 +265,11 @@ class ReplayBuffer(nn.Module):
             for buffer_name in self.registered_buffers:
                 buffers[buffer_name] = getattr(self, buffer_name)[: self.current_index]
 
-        class_count = buffers[self.registered_buffers[1]].bincount()
+        class_count = buffers["targets_buffer"].bincount()
 
         # a sample's prob. of being sample is inv. prop to its class abundance
         class_sample_p = 1.0 / class_count.float() / class_count.size(0)
-        per_sample_p = class_sample_p.gather(0, buffers[self.registered_buffers[1]])
+        per_sample_p = class_sample_p.gather(0, buffers["targets_buffer"])
         indices = torch.multinomial(per_sample_p, n_samples)
 
         return OrderedDict({k: v[indices] for (k, v) in buffers.items()})
@@ -292,13 +287,9 @@ class ReplayBuffer(nn.Module):
         task = task_ids
 
         # we need to create an "augmented" buffer containing the incoming data
-        bx = torch.cat(
-            (getattr(self, self.registered_buffers[0])[: self.current_index], x)
-        )
-        by = torch.cat(
-            (getattr(self, self.registered_buffers[1])[: self.current_index], label)
-        )
-        bt = torch.cat((getattr(self, self.registered_buffers[2]), task))
+        bx = torch.cat((getattr(self, "data_buffer")[: self.current_index], x))
+        by = torch.cat((getattr(self, "targets_buffer")[: self.current_index], label))
+        bt = torch.cat((getattr(self, "task_ids_buffer"), task))
         bidx = torch.arange(bx.size(0))  # .to(bx.device)
 
         # buf_size x label_size
