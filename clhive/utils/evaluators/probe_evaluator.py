@@ -32,9 +32,9 @@ class ProbeEvaluator(BaseEvaluator):
         self.n_epochs = n_epochs
         self.linear_heads = {}
 
-    def _train_linear_heads(self, task_id: int):
+    def _train_linear_heads(self, task_id: int) -> None:
 
-        if isinstance(self.train_scenario, TaskIncremental):
+        if type(self.train_scenario) is TaskIncremental:
             probe_n_classes = self.train_scenario.loader.sampler.cpt
             sample_all_seen_tasks = False
             task_list = [*range(self.train_scenario.n_tasks)]
@@ -52,8 +52,14 @@ class ProbeEvaluator(BaseEvaluator):
         }
         self.agent.eval()
 
-        for task_t, train_loader in enumerate(self.train_scenario):
+        train_loader = self.train_scenario.loader
 
+        for task_t in task_list:
+
+            train_loader.sampler.set_task(
+                task_id=task_t,
+                sample_all_seen_tasks=type(self.train_scenario) is ClassIncremental,
+            )
             optim = torch.optim.AdamW(
                 self.linear_heads[str(task_t)].parameters(), lr=1e-4, weight_decay=5e-4,
             )
@@ -77,7 +83,7 @@ class ProbeEvaluator(BaseEvaluator):
                     )
 
     @torch.no_grad()
-    def _evaluate(self, task_id: int):
+    def _evaluate(self, task_id: int) -> List[float]:
         """_summary_
 
         Args:
@@ -94,7 +100,7 @@ class ProbeEvaluator(BaseEvaluator):
                 x, y, t = x.to(self.device), y.to(self.device), t.to(self.device)
 
                 probe_id = task_id
-                if isinstance(self.eval_scenario, TaskIncremental):
+                if type(self.eval_scenario) is TaskIncremental:
                     probe_id = task_t
 
                 features = self.agent.model.forward_backbone(x)
@@ -113,19 +119,20 @@ class ProbeEvaluator(BaseEvaluator):
         """ """
         pass
 
-    def on_eval_end(self, tasks_accs: List[float], current_task_id: int):
+    def on_eval_end(self, tasks_accs: List[float], current_task_id: int) -> None:
         """ """
-        avg_acc = np.mean(tasks_accs[: current_task_id + 1])
+        avg_obs_acc = np.mean(tasks_accs[: current_task_id + 1])
+        avg_anytime_acc = np.mean(tasks_accs)
         print(
             "\n",
             "\t".join([str(int(x)) for x in tasks_accs]),
-            f"\tAvg Acc: {avg_acc:.2f}",
+            f"  |  Avg observed Acc: {avg_obs_acc:.2f}  |  Avg anytime Acc: {avg_anytime_acc:.2f}",
         )
 
         # Reset train_scenario
         self.train_scenario.set_task(task_id=current_task_id + 1)
 
-    def fit(self, current_task_id: int = None):
+    def fit(self, current_task_id: int = None) -> None:
         """_summary_
 
         Args:

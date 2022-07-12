@@ -25,7 +25,7 @@ class ContinualEvaluator(BaseEvaluator):
         super().__init__(method, eval_scenario, logger, accelerator)
 
     @torch.no_grad()
-    def _evaluate(self, task_id: int):
+    def _evaluate(self, task_id: int) -> List[float]:
         """_summary_
 
         Args:
@@ -59,16 +59,17 @@ class ContinualEvaluator(BaseEvaluator):
         """ """
         pass
 
-    def on_eval_end(self, tasks_accs: List[float], current_task_id: int):
+    def on_eval_end(self, tasks_accs: List[float], current_task_id: int) -> None:
         """ """
-        avg_acc = np.mean(tasks_accs[: current_task_id + 1])
+        avg_obs_acc = np.mean(tasks_accs[: current_task_id + 1])
+        avg_anytime_acc = np.mean(tasks_accs)
         print(
             "\n",
             "\t".join([str(int(x)) for x in tasks_accs]),
-            f"\tAvg Acc: {avg_acc:.2f}",
+            f"  |  Avg observed Acc: {avg_obs_acc:.2f}  |  Avg anytime Acc: {avg_anytime_acc:.2f}",
         )
 
-    def fit(self, current_task_id: int):
+    def fit(self, current_task_id: int) -> None:
         """_summary_
 
         Args:
