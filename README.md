@@ -75,6 +75,22 @@ for task_id, train_loader in enumerate(train_scenario):
         ...
 ```
 
+To create a replay buffer for rehearsal-based methods, *e.g.* ER, you can use `clhive.ReplayBuffer` class. 
+
+```python
+from clhive import ReplayBuffer
+
+buffer = ReplayBuffer(
+    capacity=20 * 10, input_size=32, input_n_channels=3
+)
+agent = auto_method(
+    name="er",
+    model=model,
+    optim=SGD(model.parameters(), lr=0.01),
+    buffer=buffer,
+)
+```
+
 Instead of iterating over all tasks manually, you can easily use `clhive.Trainer` to train the continual agent in any of the supported scenarios. 
 
 ```python
