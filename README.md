@@ -70,7 +70,6 @@ agent = auto_method(
 
 for task_id, train_loader in enumerate(train_scenario):
     for x, y, t in train_loader:
-        # Do your cool stuff here
         loss = agent.observe(x, y, t)
         ...
 ```
