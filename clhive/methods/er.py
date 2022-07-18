@@ -46,8 +46,18 @@ class ER(BaseMethod):
 
         return loss
 
+    def process_inc(
+        self, x: torch.FloatTensor, y: torch.FloatTensor, t: torch.FloatTensor
+    ):
+        return self.process(x, y, t)
+
+    def process_re(
+        self, x: torch.FloatTensor, y: torch.FloatTensor, t: torch.FloatTensor
+    ):
+        return self.process(x, y, t)
+
     def observe(self, x: torch.FloatTensor, y: torch.FloatTensor, t: torch.FloatTensor):
-        inc_loss = self.process(x, y, t)
+        inc_loss = self.process_inc(x, y, t)
 
         re_loss = 0
         if len(self.buffer) > 0:
@@ -56,7 +66,7 @@ class ER(BaseMethod):
                 self.n_replay_samples = x.size(0)
 
             re_data = self.buffer.sample(n_samples=self.n_replay_samples)
-            re_loss = self.process(
+            re_loss = self.process_re(
                 x=re_data["data_buffer"],
                 y=re_data["targets_buffer"],
                 t=re_data["task_ids_buffer"],

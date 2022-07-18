@@ -14,7 +14,7 @@ batch_size = 32
 n_tasks = 5
 image_size = 32
 input_n_channels = 3
-buffer_capacity = 50 * 100
+buffer_capacity = 50 * 10
 
 
 dataset = SplitCIFAR10(root="../cl-datasets/data/")
@@ -34,7 +34,7 @@ buffer = ReplayBuffer(
     capacity=buffer_capacity, input_size=image_size, input_n_channels=input_n_channels
 ).to(device)
 agent = auto_method(
-    name="er",
+    name="er_ace",
     model=model,
     optim=SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=1e-4),
     buffer=buffer,
