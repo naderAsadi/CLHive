@@ -56,7 +56,7 @@ from clhive.scenarios import ClassIncremental
 from clhive.models import ContinualModel
 from clhive.methods import auto_method
 
-train_dataset = SplitCIFAR10(root="../cl-datasets/data/", train=True)
+train_dataset = SplitCIFAR10(root="path/to/data/", train=True)
 train_scenario = ClassIncremental(dataset=dataset, n_tasks=5, batch_size=32)
 
 print(
@@ -79,12 +79,14 @@ To create a replay buffer for rehearsal-based methods, *e.g.* ER, you can use `c
 ```python
 from clhive import ReplayBuffer
 
-buffer = ReplayBuffer(capacity=20 * 10, input_size=32, input_n_channels=3)
+device = torch.device("cuda")
+buffer = ReplayBuffer(capacity=20 * 10, device=device)
+
 agent = auto_method(
     name="er",
     model=model,
     optim=SGD(model.parameters(), lr=0.01),
-    buffer=buffer,
+    buffer=buffer
 )
 ```
 
@@ -93,7 +95,7 @@ Instead of iterating over all tasks manually, you can easily use `clhive.Trainer
 ```python
 from clhive import Trainer
 
-trainer = Trainer(method=agent, scenario=train_scenario, n_epochs=5, accelerator="gpu")
+trainer = Trainer(method=agent, scenario=train_scenario, n_epochs=5, device=device)
 trainer.fit()
 ```
 
@@ -102,10 +104,10 @@ Similar to the `Trainer` class, `clhive.utils.evaluators` package offers several
 ```python
 from clhive.utils.evaluators import ContinualEvaluator, ProbeEvaluator
 
-test_dataset = SplitCIFAR10(root="../cl-datasets/data/", train=False)
+test_dataset = SplitCIFAR10(root="path/to/data/", train=False)
 test_scenario = ClassIncremental(test_dataset, n_tasks=5, batch_size=32, n_workers=6)
 
-evaluator = ContinualEvaluator(method=agent, scenario=test_scenario, accelerator="gpu")
+evaluator = ContinualEvaluator(method=agent, scenario=test_scenario, device=device)
 evaluator.fit()
 ```
 
@@ -113,7 +115,7 @@ Evaluators can also be passed to `clhive.Trainer` for automatic evaluation after
 
 ```python
 trainer = Trainer(
-    method=agent, scenario=scenario, n_epochs=5, evaluator=evaluator, accelerator="gpu"
+    method=agent, scenario=scenario, n_epochs=5, evaluator=evaluator, device=device
 )
 trainer.fit()
 ```

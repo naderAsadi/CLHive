@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, Tuple
 @dataclass
 class DataConfig:
     dataset: str = "cifar10"
-    root: str = "../cl-datasets/data/"
+    root: str = "../cl-datasets/"
     n_tasks: int = 5
     mem_size: int = 0
     download: Optional[bool] = True

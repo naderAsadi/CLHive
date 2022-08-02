@@ -19,10 +19,21 @@ class ContinualEvaluator(BaseEvaluator):
         method: BaseMethod,
         eval_scenario: Union[ClassIncremental, TaskIncremental],
         logger: Optional[BaseLogger] = None,
-        accelerator: Optional[str] = "gpu",
+        device: Optional[torch.device] = None,
     ) -> "ContinualEvaluator":
+        """_summary_
 
-        super().__init__(method, eval_scenario, logger, accelerator)
+        Args:
+            method (BaseMethod): _description_
+            eval_scenario (Union[ClassIncremental, TaskIncremental]): _description_
+            logger (Optional[BaseLogger], optional): _description_. Defaults to None.
+            device (Optional[torch.device], optional): _description_. Defaults to None.
+
+        Returns:
+            ContinualEvaluator: _description_
+        """
+
+        super().__init__(method, eval_scenario, logger, device)
 
     @torch.no_grad()
     def _evaluate(self, task_id: int) -> List[float]:

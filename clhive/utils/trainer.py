@@ -21,17 +21,13 @@ class Trainer:
         n_epochs: int,
         evaluator: Optional[BaseEvaluator] = None,
         logger: Optional[BaseLogger] = None,
-        accelerator: Optional[str] = "gpu",
+        device: Optional[torch.device] = None,
     ) -> "Trainer":
 
-        assert accelerator in ["gpu", "cpu", None], (
-            "Currently supported accelerators are [`gpu`, `cpu`],"
-            + " but {accelerator} was received."
-        )
+        if device is None:
+            device = torch.device("cpu")
+        self.device = device
 
-        self.device = torch.device(
-            "cuda" if accelerator == "gpu" and torch.cuda.is_available() else "cpu"
-        )
         self.agent = method.to(self.device)
         self.scenario = scenario
         self.n_epochs = n_epochs

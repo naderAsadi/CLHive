@@ -17,7 +17,7 @@ input_n_channels = 3
 buffer_capacity = 50 * 10
 
 
-dataset = SplitCIFAR10(root="../cl-datasets/data/")
+dataset = SplitCIFAR10(root="../cl-datasets/")
 scenario = ClassIncremental(
     dataset=dataset, n_tasks=n_tasks, batch_size=batch_size, n_workers=6
 )
@@ -30,9 +30,7 @@ model = ContinualModel.auto_model("resnet18", scenario, image_size=image_size).t
     device
 )
 
-buffer = ReplayBuffer(
-    capacity=buffer_capacity, input_size=image_size, input_n_channels=input_n_channels
-).to(device)
+buffer = ReplayBuffer(capacity=buffer_capacity, device=device)
 agent = auto_method(
     name="er_ace",
     model=model,
@@ -40,15 +38,13 @@ agent = auto_method(
     buffer=buffer,
 )
 
-test_dataset = SplitCIFAR10(root="../cl-datasets/data/", train=False)
+test_dataset = SplitCIFAR10(root="../cl-datasets/", train=False)
 test_scenario = ClassIncremental(
     test_dataset, n_tasks=n_tasks, batch_size=batch_size, n_workers=6
 )
-evaluator = ContinualEvaluator(
-    method=agent, eval_scenario=test_scenario, accelerator="gpu"
-)
+evaluator = ProbeEvaluator(method=agent, train_scenario=scenario, eval_scenario=test_scenario, n_epochs=5, device=device)
 
 trainer = Trainer(
-    method=agent, scenario=scenario, evaluator=evaluator, n_epochs=5, accelerator="gpu"
+    method=agent, scenario=scenario, evaluator=evaluator, n_epochs=5, device=device
 )
 trainer.fit()

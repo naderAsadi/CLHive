@@ -12,7 +12,7 @@ class BaseEvaluator:
         method: BaseMethod,
         eval_scenario: Union[ClassIncremental, TaskIncremental],
         logger: Optional[BaseLogger] = None,
-        accelerator: Optional[str] = "gpu",
+        device: Optional[torch.device] = None,
     ) -> "BaseEvaluator":
         """_summary_
 
@@ -20,20 +20,15 @@ class BaseEvaluator:
             method (BaseMethod): _description_
             eval_scenario (Union[ClassIncremental, TaskIncremental]): _description_
             logger (Optional[BaseLogger], optional): _description_. Defaults to None.
-            accelerator (Optional[str], optional): _description_. Defaults to "gpu".
+            device (Optional[torch.device], optional): _description_. Defaults to None.
 
         Returns:
             BaseEvaluator: _description_
         """
+        if device is None:
+            device = torch.device("cpu")
+        self.device = device
 
-        assert accelerator in ["gpu", "cpu", None], (
-            "Currently supported accelerators are [`gpu`, `cpu`],"
-            + " but {accelerator} was received."
-        )
-
-        self.device = torch.device(
-            "cuda" if accelerator == "gpu" and torch.cuda.is_available() else "cpu"
-        )
         self.agent = method.to(self.device)
         self.eval_scenario = eval_scenario
 
