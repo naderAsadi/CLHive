@@ -5,13 +5,13 @@
 
 ### Currently Supported Methods
 
-- [LwF, 2016](https://arxiv.org/abs/1606.09282)
-- [iCaRL, 2016](https://arxiv.org/abs/1611.07725)
-- [EWC, 2017](https://arxiv.org/abs/1612.00796)
-- [AGEM, 2018](https://arxiv.org/abs/1812.00420)
+- [~~LwF, 2016~~](https://arxiv.org/abs/1606.09282)
+- [~~iCaRL, 2016~~](https://arxiv.org/abs/1611.07725)
+- [~~EWC, 2017~~](https://arxiv.org/abs/1612.00796)
+- [~~AGEM, 2018~~](https://arxiv.org/abs/1812.00420)
 - [ER, 2019](https://arxiv.org/abs/1902.10486)
-- [MIR, 2019](https://arxiv.org/abs/1908.04742)
-- [DER, 2020](https://arxiv.org/abs/2004.07211)
+- [~~MIR, 2019~~](https://arxiv.org/abs/1908.04742)
+- [~~DER, 2020~~](https://arxiv.org/abs/2004.07211)
 - [ER-ACE/ER-AML, 2022](https://arxiv.org/abs/2104.05025)
 
 ## Installation
