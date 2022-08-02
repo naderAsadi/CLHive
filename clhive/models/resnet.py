@@ -94,23 +94,14 @@ class Bottleneck(nn.Module):
 
 class ResNet(nn.Module):
     def __init__(
-        self,
-        block,
-        num_blocks,
-        nf,
-        input_size,
-        in_channel=3,
-        zero_init_residual=False,
-        **kwargs
+        self, block, num_blocks, nf, in_channel=3, zero_init_residual=False, **kwargs
     ):
         super(ResNet, self).__init__()
 
         self.in_planes = nf
-        self.input_size = input_size
 
         # hardcoded for now
-        self.last_hid = nf * 8 * block.expansion
-        # self.last_hid = last_hid * (input_size[-1] // 2 // 2 // 2 // 4) ** 2
+        self.output_dim = nf * 8 * block.expansion
 
         self.conv1 = nn.Conv2d(
             in_channel, nf, kernel_size=3, stride=1, padding=1, bias=False
@@ -170,28 +161,20 @@ class ResNet(nn.Module):
 
 
 @register_model("resnet18")
-def resnet18(input_size: int, nf: Optional[int] = 32, **kwargs):
-    return ResNet(
-        BasicBlock, num_blocks=[2, 2, 2, 2], nf=nf, input_size=input_size, **kwargs
-    )
+def resnet18(nf: Optional[int] = 32, **kwargs):
+    return ResNet(BasicBlock, num_blocks=[2, 2, 2, 2], nf=nf, **kwargs)
 
 
 @register_model("resnet34")
-def resnet34(input_size: int, nf: Optional[int] = 32, **kwargs):
-    return ResNet(
-        BasicBlock, num_blocks=[3, 4, 6, 3], nf=nf, input_size=input_size, **kwargs
-    )
+def resnet34(nf: Optional[int] = 32, **kwargs):
+    return ResNet(BasicBlock, num_blocks=[3, 4, 6, 3], nf=nf, **kwargs)
 
 
 @register_model("resnet50")
-def resnet50(input_size: int, nf: Optional[int] = 32, **kwargs):
-    return ResNet(
-        Bottleneck, num_blocks=[3, 4, 6, 3], nf=nf, input_size=input_size, **kwargs
-    )
+def resnet50(nf: Optional[int] = 32, **kwargs):
+    return ResNet(Bottleneck, num_blocks=[3, 4, 6, 3], nf=nf, **kwargs)
 
 
 @register_model("resnet101")
-def resnet101(input_size: int, nf: Optional[int] = 32, **kwargs):
-    return ResNet(
-        Bottleneck, num_blocks=[3, 4, 23, 3], nf=nf, input_size=input_size, **kwargs
-    )
+def resnet101(nf: Optional[int] = 32, **kwargs):
+    return ResNet(Bottleneck, num_blocks=[3, 4, 23, 3], nf=nf, **kwargs)

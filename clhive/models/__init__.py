@@ -38,7 +38,7 @@ def register_model(name, bypass_checks=False):
 
 def auto_model(
     name: str,
-    input_size: int,
+    input_size: Optional[int] = None,
     hidden_size: Optional[int] = None,
     output_size: Optional[int] = None,
     nf: Optional[int] = 32,

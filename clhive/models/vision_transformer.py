@@ -83,6 +83,7 @@ class VisualTransformer(nn.Module):
         n_heads: int = 12,
         output_dim: int = 512,
         act_layer: Callable = nn.GELU,
+        **kwargs,
     ):
 
         super().__init__()
@@ -161,7 +162,7 @@ def vit_tiny_patch16(
         n_layers=12,
         n_heads=3,
         output_dim=output_dim,
-        **kwargs
+        **kwargs,
     )
 
 
@@ -177,7 +178,7 @@ def vit_small_patch16(
         n_layers=12,
         n_heads=6,
         output_dim=output_dim,
-        **kwargs
+        **kwargs,
     )
 
 
@@ -193,7 +194,7 @@ def vit_small_patch32(
         n_layers=12,
         n_heads=6,
         output_dim=output_dim,
-        **kwargs
+        **kwargs,
     )
 
 
@@ -211,7 +212,7 @@ def vit_base_patch16(
         n_layers=12,
         n_heads=12,
         output_dim=output_dim,
-        **kwargs
+        **kwargs,
     )
 
 
@@ -229,7 +230,7 @@ def vit_base_patch32(
         n_layers=12,
         n_heads=12,
         output_dim=output_dim,
-        **kwargs
+        **kwargs,
     )
 
 
@@ -245,7 +246,7 @@ def vit_large_patch14(
         n_layers=24,
         n_heads=16,
         output_dim=output_dim,
-        **kwargs
+        **kwargs,
     )
 
 
@@ -264,7 +265,7 @@ def vit_large_patch16(
         n_layers=24,
         n_heads=16,
         output_dim=output_dim,
-        **kwargs
+        **kwargs,
     )
 
 
@@ -280,7 +281,7 @@ def vit_large_patch32(
         n_layers=24,
         n_heads=16,
         output_dim=output_dim,
-        **kwargs
+        **kwargs,
     )
 
 
@@ -296,7 +297,7 @@ def vit_huge_patch14(
         n_layers=32,
         n_heads=16,
         output_dim=output_dim,
-        **kwargs
+        **kwargs,
     )
 
 
@@ -312,5 +313,5 @@ def vit_giant_patch14(
         n_layers=40,
         n_heads=16,
         output_dim=output_dim,
-        **kwargs
+        **kwargs,
     )

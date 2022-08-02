@@ -35,7 +35,7 @@ class ContinualModel(nn.Module):
         cls,
         backbone_name: str,
         scenario: Union[ClassIncremental, TaskIncremental],
-        image_size: int,
+        image_size: Optional[int] = None,
         head_name: Optional[str] = "linear",
     ) -> "ContinualModel":
 
@@ -45,7 +45,7 @@ class ContinualModel(nn.Module):
             heads = [
                 auto_model(
                     name=head_name,
-                    input_size=backbone.last_hid,
+                    input_size=backbone.output_dim,
                     output_size=scenario.loader.sampler.cpt,
                 )
                 for t in range(scenario.n_tasks)
@@ -54,7 +54,7 @@ class ContinualModel(nn.Module):
             heads = [
                 auto_model(
                     name=head_name,
-                    input_size=backbone.last_hid,
+                    input_size=backbone.output_dim,
                     output_size=scenario.n_classes,
                 )
             ]
