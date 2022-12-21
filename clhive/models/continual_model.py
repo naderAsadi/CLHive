@@ -83,11 +83,17 @@ class ContinualModel(nn.Module):
     def forward_backbone(self, x) -> torch.Tensor:
         return self.backbone(x)
 
-    def forward_head(self, x: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
-        if isinstance(self.scenario, ClassIncremental):
+    def forward_head(
+        self, x: torch.Tensor, t: Optional[torch.Tensor] = None
+    ) -> torch.Tensor:
+        if (t is None) or (not isinstance(self.scenario, TaskIncremental)):
             return self.heads[0](x)
 
-        pred = torch.zeros(x.size(0), self.heads[0].output_size)
+        pred = torch.zeros(
+            x.size(0),
+            self.heads[0].output_size,
+            device=next(self.backbone.parameters()).device,
+        )
         tasks = t.unique().tolist()
         for task in tasks:
             idx = t == task
@@ -95,7 +101,9 @@ class ContinualModel(nn.Module):
 
         return pred
 
-    def forward(self, x: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
+    def forward(
+        self, x: torch.Tensor, t: Optional[torch.Tensor] = None
+    ) -> torch.Tensor:
         """
         Perform computation of blocks in the order define in get_blocks.
         """

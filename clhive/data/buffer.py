@@ -20,7 +20,9 @@ class ReplayBuffer(nn.Module):
     """
 
     def __init__(
-        self, capacity: int, device: Optional[torch.device] = None,
+        self,
+        capacity: int,
+        device: Optional[torch.device] = None,
     ) -> "ReplayBuffer":
         """_summary_
 

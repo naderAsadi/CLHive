@@ -93,11 +93,11 @@ def save_(x, name="tmp.png"):
 
 def overwrite_grad(pp, new_grad, grad_dims):
     """
-        This is used to overwrite the gradients with a new gradient
-        vector, whenever violations occur.
-        pp: parameters
-        newgrad: corrected gradient
-        grad_dims: list storing number of parameters at each layer
+    This is used to overwrite the gradients with a new gradient
+    vector, whenever violations occur.
+    pp: parameters
+    newgrad: corrected gradient
+    grad_dims: list storing number of parameters at each layer
     """
     cnt = 0
     for param in pp():
@@ -111,7 +111,7 @@ def overwrite_grad(pp, new_grad, grad_dims):
 
 def get_grad_vector(pp, grad_dims):
     """
-     gather the gradients in one vector
+    gather the gradients in one vector
     """
     grads = torch.zeros(size=(sum(grad_dims),), device=pp[0].device)
 
@@ -151,10 +151,10 @@ def get_grad_dims(self):
 # https://github.com/aimagelab/mammoth/blob/cb9a36d788d6ad051c9eee0da358b25421d909f5/models/gem.py#L34
 def store_grad(params, grads, grad_dims):
     """
-        This stores parameter gradients of past tasks.
-        pp: parameters
-        grads: gradients
-        grad_dims: list with number of parameters per layers
+    This stores parameter gradients of past tasks.
+    pp: parameters
+    grads: gradients
+    grad_dims: list with number of parameters per layers
     """
     # store the gradients
     grads.fill_(0.0)

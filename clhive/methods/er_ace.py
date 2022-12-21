@@ -48,7 +48,7 @@ class ER_ACE(ER):
     def process_inc(
         self, x: torch.FloatTensor, y: torch.FloatTensor, t: torch.FloatTensor
     ):
-        """ get loss from incoming data """
+        """get loss from incoming data"""
 
         present = y.unique()
         self.seen_so_far = list(set(self.seen_so_far + present.tolist()))

@@ -12,16 +12,14 @@ builtins.__clhive_SETUP__ = True
 
 
 def load_description(path_dir=PATH_ROOT, filename="README.md"):
-    """Load long description from readme in the path_dir/ directory
-    """
+    """Load long description from readme in the path_dir/ directory"""
     with open(os.path.join(path_dir, filename)) as f:
         long_description = f.read()
     return long_description
 
 
 def load_requirements(path_dir=PATH_ROOT, filename="requirements.txt"):
-    """Load requirements from text file in the path_dir/requirement.txt
-    """
+    """Load requirements from text file in the path_dir/requirement.txt"""
     with open(os.path.join(path_dir, filename), "r") as f:
         packages = f.read().splitlines()
     return packages

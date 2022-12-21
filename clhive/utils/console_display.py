@@ -58,7 +58,8 @@ class ConsoleDisplay:
         return table
 
     def create_progress(
-        self, metrics_columns: Optional[Dict[str, Any]] = None,
+        self,
+        metrics_columns: Optional[Dict[str, Any]] = None,
     ):
 
         main_columns = {}
@@ -150,7 +151,8 @@ if __name__ == "__main__":
     display.start()
     for t in range(5):
         display.add_progress_bar(
-            description=f"Task {t} Training", total_steps=2 * 100,
+            description=f"Task {t} Training",
+            total_steps=2 * 100,
         )
         for e in range(2):
             for i in range(100):

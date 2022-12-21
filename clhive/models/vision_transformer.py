@@ -98,7 +98,7 @@ class VisualTransformer(nn.Module):
             bias=False,
         )
 
-        scale = embed_dim ** -0.5
+        scale = embed_dim**-0.5
         self.num_patches = (input_size // patch_size) ** 2
 
         self.class_embedding = nn.Parameter(scale * torch.randn(embed_dim))

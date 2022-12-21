@@ -17,7 +17,7 @@ DATASET_CLASS_NAMES_TB = {}
 def register_dataset(name, bypass_checks=False):
     """Registers a :class:`ContinualDataset` subclass.
 
-    This decorator allows to instantiate a subclass of ContinualDataset 
+    This decorator allows to instantiate a subclass of ContinualDataset
     from a configuration file, even if the class itself is not
     part of the framework. To use it, apply this decorator to a
     ClassyDataset subclass like this:

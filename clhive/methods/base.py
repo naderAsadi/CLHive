@@ -13,9 +13,7 @@ from ..utils import get_optimizer
 
 
 class BaseMethod(nn.Module):
-    """[summary]
-
-    """
+    """[summary]"""
 
     def __init__(
         self,
@@ -54,8 +52,7 @@ class BaseMethod(nn.Module):
 
     @property
     def one_sample_flop(self):
-        """[summary]
-        """
+        """[summary]"""
         if not hasattr(self, "_train_cost"):
             input = torch.FloatTensor(size=(1,) + self.config.input_size).to(
                 self.device
