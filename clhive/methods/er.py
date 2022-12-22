@@ -37,17 +37,29 @@ class ER(BaseMethod):
         self.loss = torch.nn.CrossEntropyLoss()
 
     @property
-    def name(self):
+    def name(self) -> str:
         return "er"
 
-    def process(self, x: torch.FloatTensor, y: torch.FloatTensor, t: torch.FloatTensor):
+    def process_inc(
+        self, x: torch.FloatTensor, y: torch.FloatTensor, t: torch.FloatTensor
+    ) -> torch.FloatTensor:
         pred = self.model(x, t)
         loss = self.loss(pred, y)
 
         return loss
 
-    def observe(self, x: torch.FloatTensor, y: torch.FloatTensor, t: torch.FloatTensor):
-        inc_loss = self.process(x, y, t)
+    def process_re(
+        self, x: torch.FloatTensor, y: torch.FloatTensor, t: torch.FloatTensor
+    ) -> torch.FloatTensor:
+        pred = self.model(x, t)
+        loss = self.loss(pred, y)
+
+        return loss
+
+    def observe(
+        self, x: torch.FloatTensor, y: torch.FloatTensor, t: torch.FloatTensor
+    ) -> torch.FloatTensor:
+        inc_loss = self.process_inc(x, y, t)
 
         re_loss = 0
         if len(self.buffer) > 0:
@@ -56,7 +68,7 @@ class ER(BaseMethod):
                 self.n_replay_samples = x.size(0)
 
             re_data = self.buffer.sample(n_samples=self.n_replay_samples)
-            re_loss = self.process(x=re_data["x"], y=re_data["y"], t=re_data["t"])
+            re_loss = self.process_re(x=re_data["x"], y=re_data["y"], t=re_data["t"])
 
         loss = inc_loss + re_loss
         self.update(loss)

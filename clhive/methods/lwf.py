@@ -35,7 +35,7 @@ class LwF(BaseMethod):
         self.prev_model = None
 
     @property
-    def name(self):
+    def name(self) -> str:
         return "lwf"
 
     def record_state(self) -> None:

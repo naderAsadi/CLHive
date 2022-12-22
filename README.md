@@ -6,7 +6,7 @@
 ### Currently Supported Methods
 
 - [LwF, 2016](https://arxiv.org/abs/1606.09282)
-- [~~iCaRL, 2016~~](https://arxiv.org/abs/1611.07725)
+- [iCaRL, 2016](https://arxiv.org/abs/1611.07725)
 - [EWC, 2017](https://arxiv.org/abs/1612.00796)
 - [~~AGEM, 2018~~](https://arxiv.org/abs/1812.00420)
 - [ER, 2019](https://arxiv.org/abs/1902.10486)

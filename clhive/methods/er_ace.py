@@ -42,12 +42,12 @@ class ER_ACE(ER):
         self.seen_so_far = []
 
     @property
-    def name(self):
+    def name(self) -> str:
         return "er_ace"
 
     def process_inc(
         self, x: torch.FloatTensor, y: torch.FloatTensor, t: torch.FloatTensor
-    ):
+    ) -> torch.FloatTensor:
         """get loss from incoming data"""
 
         present = y.unique()

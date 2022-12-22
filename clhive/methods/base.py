@@ -43,15 +43,15 @@ class BaseMethod(nn.Module):
         self._current_task_id = 0
 
     @property
-    def name(self):
+    def name(self) -> str:
         raise NotImplementedError
 
     @property
-    def current_task(self):
+    def current_task(self) -> int:
         return self._current_task_id
 
     @property
-    def one_sample_flop(self):
+    def one_sample_flop(self) -> Tuple[float, float]:
         """[summary]"""
         if not hasattr(self, "_train_cost"):
             input = torch.FloatTensor(size=(1,) + self.config.input_size).to(
@@ -63,7 +63,7 @@ class BaseMethod(nn.Module):
 
         return self._train_cost, self._train_flop_table
 
-    def get_model(self, task_id: int = None):
+    def get_model(self, task_id: int = None) -> Union[ContinualModel, nn.Module]:
         """[summary]
 
         Args:
@@ -80,7 +80,7 @@ class BaseMethod(nn.Module):
         ), f"No trained model is available for task {task_id}."
         return self._model_history[str(task_id)]
 
-    def set_model(self, model: Union[ContinualModel, nn.Module], task_id: int):
+    def set_model(self, model: Union[ContinualModel, nn.Module], task_id: int) -> None:
         """_summary_
 
         Args:
@@ -94,13 +94,13 @@ class BaseMethod(nn.Module):
         else:
             self._model_history[str(task_id)] = model
 
-    def train(self):
+    def train(self) -> None:
         self.model.train()
 
-    def eval(self):
+    def eval(self) -> None:
         self.model.eval()
 
-    def update(self, loss: torch.FloatTensor):
+    def update(self, loss: torch.FloatTensor) -> None:
         self.optim.zero_grad()
         loss.backward()
         self.optim.step()
@@ -115,11 +115,11 @@ class BaseMethod(nn.Module):
             t = 0
         return self.model(x, t)
 
-    def on_task_start(self):
+    def on_task_start(self) -> None:
         """Callback executed at the start of each task."""
         pass
 
-    def on_task_end(self):
+    def on_task_end(self) -> None:
         """Callback executed at the end of each task."""
 
         self._current_task_id += 1

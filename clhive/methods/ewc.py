@@ -62,7 +62,7 @@ class EWC(BaseMethod):
         self.importance_matrices = dict()
 
     @property
-    def name(self):
+    def name(self) -> str:
         return "ewc"
 
     def _compute_importance(
