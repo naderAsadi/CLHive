@@ -1,5 +1,6 @@
 from typing import Any, List, Optional, Tuple, Union
 import torch
+import torch.nn.functional as F
 
 from . import register_method
 from .er import ER
@@ -8,8 +9,26 @@ from ..loggers import BaseLogger
 from ..models import ContinualModel
 
 
-@register_method("er_ace")
-class ER_ACE(ER):
+def store_grad(params, grads, grad_dims):
+    """
+    This stores parameter gradients of past tasks.
+    pp: parameters
+    grads: gradients
+    grad_dims: list with number of parameters per layers
+    """
+    # store the gradients
+    grads.fill_(0.0)
+    count = 0
+    for param in params():
+        if param.grad is not None:
+            begin = 0 if count == 0 else sum(grad_dims[:count])
+            end = np.sum(grad_dims[: count + 1])
+            grads[begin:end].copy_(param.grad.data.view(-1))
+        count += 1
+
+
+@register_method("agem")
+class AGEM(ER):
     def __init__(
         self,
         model: Union[ContinualModel, torch.nn.Module],
@@ -18,7 +37,7 @@ class ER_ACE(ER):
         logger: Optional[BaseLogger] = None,
         n_replay_samples: Optional[int] = None,
         **kwargs,
-    ) -> "ER_ACE":
+    ) -> "AGEM":
         """_summary_
 
         Args:
@@ -29,7 +48,7 @@ class ER_ACE(ER):
             n_replay_samples (Optional[int], optional): _description_. Defaults to None.
 
         Returns:
-            ER_ACE: _description_
+            AGEM: _description_
         """
         super().__init__(
             model=model,
@@ -39,33 +58,6 @@ class ER_ACE(ER):
             n_replay_samples=n_replay_samples,
         )
 
-        self.seen_so_far = []
-
     @property
     def name(self) -> str:
-        return "er_ace"
-
-    def process_inc(
-        self, x: torch.FloatTensor, y: torch.FloatTensor, t: torch.FloatTensor
-    ) -> torch.FloatTensor:
-        """get loss from incoming data"""
-
-        present = y.unique()
-        self.seen_so_far = list(set(self.seen_so_far + present.tolist()))
-
-        # process data
-        logits = self.model(x, t)
-        mask = torch.zeros_like(logits)
-
-        # unmask current classes
-        mask[:, present] = 1
-
-        # unmask unseen classes
-        mask[:, max(self.seen_so_far) :] = 1
-
-        if t[0].item() > 0:
-            logits = logits.masked_fill(mask == 0, -1e9)
-
-        loss = self.loss(logits, y)
-
-        return loss
+        return "agem"
