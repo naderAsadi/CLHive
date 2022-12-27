@@ -23,7 +23,6 @@ CLHive requires **Python 3.6+**.
 - fvcore>=0.1.5
 - hydra-core>=1.0.0
 - numpy>=1.22.4
-- rich>=12.4.4
 - pytorch>=1.12.0
 - torchvision>=0.13.0
 - wandb>=0.12.19
