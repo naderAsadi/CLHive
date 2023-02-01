@@ -12,6 +12,7 @@
 - [ER, 2019](https://arxiv.org/abs/1902.10486)
 - [~~MIR, 2019~~](https://arxiv.org/abs/1908.04742)
 - [DER/DER++, 2020](https://arxiv.org/abs/2004.07211)
+- [~~SS-IL, 2020~~](https://arxiv.org/abs/2003.13947)
 - [ER-ACE/ER-AML, 2022](https://arxiv.org/abs/2104.05025)
 
 ## Installation
