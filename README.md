@@ -14,6 +14,7 @@
 - [DER/DER++, 2020](https://arxiv.org/abs/2004.07211)
 - [~~SS-IL, 2020~~](https://arxiv.org/abs/2003.13947)
 - [ER-ACE/ER-AML, 2022](https://arxiv.org/abs/2104.05025)
+- [~~PRD, 2023~~](https://arxiv.org/abs/2303.14771)
 
 ## Installation
 
