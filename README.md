@@ -10,11 +10,11 @@
 - [EWC, 2017](https://arxiv.org/abs/1612.00796)
 - [AGEM/AGEM++, 2018](https://arxiv.org/abs/1812.00420)
 - [ER, 2019](https://arxiv.org/abs/1902.10486)
-- [~~MIR, 2019~~](https://arxiv.org/abs/1908.04742)
+- [~~MIR, 2019~~](https://arxiv.org/abs/1908.04742)(Coming soon)
 - [DER/DER++, 2020](https://arxiv.org/abs/2004.07211)
-- [~~SS-IL, 2020~~](https://arxiv.org/abs/2003.13947)
+- [~~SS-IL, 2020~~](https://arxiv.org/abs/2003.13947)(Coming soon)
 - [ER-ACE/ER-AML, 2022](https://arxiv.org/abs/2104.05025)
-- [~~PRD, 2023~~](https://arxiv.org/abs/2303.14771). Please refer to [here](https://github.com/naderAsadi/Probing-Continual-Learning/blob/main/methods/repe.py) for the pre-release implementation. 
+- [~~PRD, 2023~~](https://arxiv.org/abs/2303.14771)(Not supported yet. Please refer to [here](https://github.com/naderAsadi/Probing-Continual-Learning/blob/main/methods/repe.py) for the pre-release implementation.)
 
 ## Installation
 
