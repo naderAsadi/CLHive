@@ -14,7 +14,7 @@
 - [DER/DER++, 2020](https://arxiv.org/abs/2004.07211)
 - [~~SS-IL, 2020~~](https://arxiv.org/abs/2003.13947) (Coming soon)
 - [ER-ACE/ER-AML, 2022](https://arxiv.org/abs/2104.05025)
-- [~~PRD, 2023~~](https://arxiv.org/abs/2303.14771) (Not supported yet, please refer to [here](https://github.com/naderAsadi/Probing-Continual-Learning/blob/main/methods/repe.py) for the pre-release implementation)
+- [~~PRD, 2023~~](https://arxiv.org/abs/2303.14771) (Not supported yet, please refer to [here](https://github.com/naderAsadi/Probing-Continual-Learning/) for the pre-release implementation)
 
 ## Installation
 
