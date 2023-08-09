@@ -1,5 +1,5 @@
 > [!IMPORTANT]
-> This repository is still **under development**.
+> This repository is still **under development**. Adding support for major baselines and key functionalities is still in progress. 
 > For the pre-release implementation of [PRD](https://proceedings.mlr.press/v202/asadi23a/asadi23a.pdf), please refer to [here](https://github.com/naderAsadi/Probing-Continual-Learning/).
 
 ## Overview
