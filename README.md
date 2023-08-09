@@ -1,4 +1,6 @@
-<h2 align="center">🚧 Under Development 🚧</h2>
+> [!IMPORTANT]
+> This repository is still **under development**.
+> For the pre-release implementation of [PRD](https://proceedings.mlr.press/v202/asadi23a/asadi23a.pdf), refer to [here](https://github.com/naderAsadi/Probing-Continual-Learning/).
 
 ## Overview
 **CLHive** is a codebase on top of [PyTorch](https://pytorch.org) for Continual Learning research. It provides the components necessary to run CL experiments, for both task-incremental and class-incremental settings. It is designed to be readable and easily extensible, to allow users to quickly run and experiment with their own ideas.
