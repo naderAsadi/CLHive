@@ -1,5 +1,4 @@
 > [!Note]
-> This repository is still **under development**.
 > For the pre-release implementation of [PRD](https://proceedings.mlr.press/v202/asadi23a/asadi23a.pdf), please refer to [here](https://github.com/naderAsadi/Probing-Continual-Learning/).
 
 ## Overview
