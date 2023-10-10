@@ -23,7 +23,6 @@ class Trainer:
         logger: Optional[BaseLogger] = None,
         device: Optional[torch.device] = None,
     ) -> "Trainer":
-
         if device is None:
             device = torch.device("cpu")
         self.device = device
@@ -38,7 +37,6 @@ class Trainer:
         self.logger = logger
 
     def _train_task(self, task_id: int, train_loader: DataLoader):
-
         self.agent.train()
         self.agent.on_task_start()
 

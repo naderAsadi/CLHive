@@ -1,37 +1,25 @@
 from typing import Any, List, Optional, Tuple, Union
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 
 from . import register_method
 from .er import ER
 from ..data import ReplayBuffer
-from ..loggers import BaseLogger
-from ..models import ContinualModel
+from ..utils import Logger
 
 
 @register_method("der")
 class DER(ER):
     def __init__(
         self,
-        model: Union[ContinualModel, torch.nn.Module],
-        optim: torch.optim,
+        model: nn.Module,
+        optimizer: torch.optim,
         buffer: ReplayBuffer,
-        logger: Optional[BaseLogger] = None,
-        n_replay_samples: Optional[int] = None,
+        n_replay_samples: int,
+        logger: Logger = None,
         **kwargs,
     ) -> "DER":
-        """_summary_
-
-        Args:
-            model (Union[ContinualModel, torch.nn.Module]): _description_
-            optim (torch.optim): _description_
-            buffer (ReplayBuffer): _description_
-            logger (Optional[BaseLogger], optional): _description_. Defaults to None.
-            n_replay_samples (Optional[int], optional): _description_. Defaults to None.
-
-        Returns:
-            DER: _description_
-        """
         super().__init__(
             model=model,
             optim=optim,
@@ -47,57 +35,33 @@ class DER(ER):
         return "der"
 
     def process_inc(
-        self, x: torch.FloatTensor, y: torch.FloatTensor, t: torch.FloatTensor
-    ) -> torch.FloatTensor:
-        """_summary_
-
-        Args:
-            x (torch.FloatTensor): _description_
-            y (torch.FloatTensor): _description_
-            t (torch.FloatTensor): _description_
-
-        Returns:
-            torch.FloatTensor: _description_
-        """
-
+        self, x: torch.Tensor, y: torch.Tensor, t: torch.Tensor
+    ) -> torch.Tensor:
         # process data
-        logits = self.model(x, t)
-        loss = self.loss(logits, y)
+        outputs = self.model(x=x, t=t)
+        loss = self.loss(outputs.logits, y)
 
-        return loss, logits.detach()
+        return loss, outputs.logits.detach()
 
     def process_re(
         self,
-        x: torch.FloatTensor,
-        y: torch.FloatTensor,
-        t: torch.FloatTensor,
-        re_logits: torch.FloatTensor,
-    ) -> torch.FloatTensor:
-        """_summary_
-
-        Args:
-            x (torch.FloatTensor): _description_
-            y (torch.FloatTensor): _description_
-            t (torch.FloatTensor): _description_
-            re_logits (torch.FloatTensor): _description_
-
-        Returns:
-            torch.FloatTensor: _description_
-        """
-
-        logits = self.model(x, t)
-        loss = self.alpha * F.mse_loss(logits, re_logits)
+        x: torch.Tensor,
+        y: torch.Tensor,
+        t: torch.Tensor,
+        re_logits: torch.Tensor,
+    ) -> torch.Tensor:
+        outputs = self.model(x=x, t=t)
+        loss = self.alpha * F.mse_loss(outputs.logits, re_logits)
 
         return loss
 
     def observe(
-        self, x: torch.FloatTensor, y: torch.FloatTensor, t: torch.FloatTensor
-    ) -> torch.FloatTensor:
+        self, x: torch.Tensor, y: torch.Tensor, t: torch.Tensor
+    ) -> torch.Tensor:
         inc_loss, logits = self.process_inc(x, y, t)
 
         re_loss = 0
         if len(self.buffer) > 0:
-
             if self.n_replay_samples is None:
                 self.n_replay_samples = x.size(0)
 
@@ -121,31 +85,19 @@ class DER(ER):
 class DERpp(DER):
     def __init__(
         self,
-        model: Union[ContinualModel, torch.nn.Module],
-        optim: torch.optim,
+        model: nn.Module,
+        optimizer: torch.optim,
         buffer: ReplayBuffer,
-        logger: Optional[BaseLogger] = None,
-        n_replay_samples: Optional[int] = None,
+        n_replay_samples: int,
+        logger: Logger = None,
         **kwargs,
     ) -> "DERpp":
-        """_summary_
-
-        Args:
-            model (Union[ContinualModel, torch.nn.Module]): _description_
-            optim (torch.optim): _description_
-            buffer (ReplayBuffer): _description_
-            logger (Optional[BaseLogger], optional): _description_. Defaults to None.
-            n_replay_samples (Optional[int], optional): _description_. Defaults to None.
-
-        Returns:
-            DERpp: _description_
-        """
         super().__init__(
             model=model,
-            optim=optim,
+            optimizer=optimizer,
             buffer=buffer,
-            logger=logger,
             n_replay_samples=n_replay_samples,
+            logger=logger,
         )
 
         self.beta = 1
@@ -156,25 +108,13 @@ class DERpp(DER):
 
     def process_re(
         self,
-        x: torch.FloatTensor,
-        y: torch.FloatTensor,
-        t: torch.FloatTensor,
-        re_logits: torch.FloatTensor,
-    ) -> torch.FloatTensor:
-        """_summary_
-
-        Args:
-            x (torch.FloatTensor): _description_
-            y (torch.FloatTensor): _description_
-            t (torch.FloatTensor): _description_
-            re_logits (torch.FloatTensor): _description_
-
-        Returns:
-            torch.FloatTensor: _description_
-        """
-
-        logits = self.model(x, t)
-        o1, o2 = logits.chunk(2)
+        x: torch.Tensor,
+        y: torch.Tensor,
+        t: torch.Tensor,
+        re_logits: torch.Tensor,
+    ) -> torch.Tensor:
+        outputs = self.model(x=x, t=t)
+        o1, o2 = outputs.logits.chunk(2)
 
         x1, x2 = x.chunk(2)
         y1, y2 = y.chunk(2)

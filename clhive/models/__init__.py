@@ -36,39 +36,17 @@ def register_model(name, bypass_checks=False):
     return register_model_cls
 
 
-def auto_model(
-    name: str,
-    input_size: Optional[int] = None,
-    hidden_size: Optional[int] = None,
-    output_size: Optional[int] = None,
-    nf: Optional[int] = 32,
-    **kwargs,
-):
-
-    assert name in MODEL_REGISTRY, "unknown model"
+def get_model(name: str, *args, image_size: int, num_classes: int, **kwargs):
     return MODEL_REGISTRY[name](
-        input_size=input_size,
-        hidden_size=hidden_size,
-        output_size=output_size,
-        nf=nf,
-        **kwargs,
+        *args, image_size=image_size, num_classes=num_classes, **kwargs
     )
 
 
 # automatically import any Python files in the models/ directory
 import_all_modules(FILE_ROOT, "clhive.models")
 
-from .continual_model import ContinualModel
-from .resnet import resnet18, resnet34, resnet50, resnet101
-from .vision_transformer import (
-    vit_tiny_patch16,
-    vit_small_patch16,
-    vit_small_patch32,
-    vit_base_patch16,
-    vit_base_patch32,
-    vit_large_patch14,
-    vit_large_patch16,
-    vit_large_patch32,
-    vit_huge_patch14,
-)
+from .model_output import ModelOutput
+from .multihead_model import MultiHeadModel
+from .vit import VisionTransformer, vit, vit_b_16, vit_b_32, vit_l_16, vit_l_32
+from .resnet import ResNet, resnet18, resnet34, resnet50, resnet101
 from .mlp import LinearClassifier, DistLinear, MLP

@@ -1,39 +1,27 @@
 from typing import Any, List, Optional, Tuple, Union
 import torch
+import torch.nn as nn
 
 from . import register_method
 from .er import ER
 from ..data import ReplayBuffer
-from ..loggers import BaseLogger
-from ..models import ContinualModel
+from ..utils import Logger
 
 
 @register_method("er_ace")
 class ER_ACE(ER):
     def __init__(
         self,
-        model: Union[ContinualModel, torch.nn.Module],
-        optim: torch.optim,
+        model: nn.Module,
+        optimizer: torch.optim,
         buffer: ReplayBuffer,
-        logger: Optional[BaseLogger] = None,
-        n_replay_samples: Optional[int] = None,
+        n_replay_samples: int,
+        logger: Logger = None,
         **kwargs,
     ) -> "ER_ACE":
-        """_summary_
-
-        Args:
-            model (Union[ContinualModel, torch.nn.Module]): _description_
-            optim (torch.optim): _description_
-            buffer (ReplayBuffer): _description_
-            logger (Optional[BaseLogger], optional): _description_. Defaults to None.
-            n_replay_samples (Optional[int], optional): _description_. Defaults to None.
-
-        Returns:
-            ER_ACE: _description_
-        """
         super().__init__(
             model=model,
-            optim=optim,
+            optimizer=optimizer,
             buffer=buffer,
             logger=logger,
             n_replay_samples=n_replay_samples,
@@ -54,7 +42,8 @@ class ER_ACE(ER):
         self.seen_so_far = list(set(self.seen_so_far + present.tolist()))
 
         # process data
-        logits = self.model(x, t)
+        outputs = self.model(x=x, t=t)
+        logits = outputs.logits
         mask = torch.zeros_like(logits)
 
         # unmask current classes

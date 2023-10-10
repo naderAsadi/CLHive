@@ -1,13 +1,13 @@
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Union
 import copy
 import torch
+import torch.nn as nn
 
 from . import register_method, BaseMethod
-from ..loggers import BaseLogger
-from ..models import ContinualModel
+from ..utils import Logger
 
 
-def zero_like_params_dict(model: torch.nn.Module):
+def zero_like_params_dict(model: nn.Module):
     """
     Create a list of (name, parameter), where parameter is initialized to zero.
     The list has as many parameters as the model, with the same size.
@@ -17,7 +17,7 @@ def zero_like_params_dict(model: torch.nn.Module):
     return [(k, torch.zeros_like(p).to(p.device)) for k, p in model.named_parameters()]
 
 
-def copy_params_dict(model: torch.nn.Module, copy_grad=False):
+def copy_params_dict(model: nn.Module, copy_grad=False):
     """
     Create a list of (name, parameter), where parameter is copied from model.
     The list has as many parameters as model, with the same size.
@@ -35,28 +35,18 @@ def copy_params_dict(model: torch.nn.Module, copy_grad=False):
 class EWC(BaseMethod):
     def __init__(
         self,
-        model: Union[ContinualModel, torch.nn.Module],
-        optim: torch.optim,
+        model: nn.Module,
+        optimizer: torch.optim,
         train_loader: torch.utils.data.DataLoader,
-        logger: Optional[BaseLogger] = None,
+        logger: Logger = None,
+        ewc_lambda: int = 100,
         **kwargs,
     ) -> "EWC":
-        """_summary_
-
-        Args:
-            model (Union[ContinualModel, torch.nn.Module]): _description_
-            optim (torch.optim): _description_
-            train_loader (torch.utils.data.DataLoader): _description_
-            logger (Optional[BaseLogger], optional): _description_. Defaults to None.
-
-        Returns:
-            EWC: _description_
-        """
-        super().__init__(model, optim, logger)
+        super().__init__(model=model, optimizer=optimizer, logger=logger)
 
         self.train_loader = train_loader
-        self.loss = torch.nn.CrossEntropyLoss()
-        self.ewc_lambda = 100
+        self.loss_func = nn.CrossEntropyLoss()
+        self.ewc_lambda = ewc_lambda
 
         self.saved_parameters = dict()
         self.importance_matrices = dict()
@@ -67,12 +57,12 @@ class EWC(BaseMethod):
 
     def _compute_importance(
         self,
-        model: torch.nn.Module,
-        criterion: torch.nn.CrossEntropyLoss,
+        model: nn.Module,
+        criterion: nn.CrossEntropyLoss,
         optimizer: torch.optim.Optimizer,
         train_loader: torch.utils.data.DataLoader,
         current_task_id: int,
-    ) -> torch.FloatTensor:
+    ) -> torch.Tensor:
         """
         Compute EWC importance matrix for each parameter
         """
@@ -82,12 +72,12 @@ class EWC(BaseMethod):
 
         train_loader.sampler.set_task(current_task_id)
         for idx, (data, targets, tasks) in enumerate(train_loader):
-
             data, targets = data.to(device), targets.to(device)
             # targets -= current_task_id * self.args.n_classes_per_task
 
             optimizer.zero_grad()
-            predictions = model(data, t=tasks)
+            outputs = model(data, t=tasks)
+            predictions = outputs.logits
 
             loss = criterion(predictions, targets)
             loss.backward()
@@ -108,8 +98,8 @@ class EWC(BaseMethod):
 
     def _record_state(
         self,
-        model: torch.nn.Module,
-        criterion: torch.nn.CrossEntropyLoss,
+        model: nn.Module,
+        criterion: nn.CrossEntropyLoss,
         optimizer: torch.optim.Optimizer,
         train_loader: torch.utils.data.DataLoader,
         current_task_id: int,
@@ -126,9 +116,7 @@ class EWC(BaseMethod):
         self.importance_matrices[current_task_id] = importance_matrix
         self.saved_parameters[current_task_id] = copy_params_dict(model)
 
-    def ewc_loss(
-        self, model: torch.nn.Module, current_task_id: int
-    ) -> torch.FloatTensor:
+    def ewc_loss(self, model: nn.Module, current_task_id: int) -> torch.Tensor:
         if current_task_id == 0:
             return 0
 
@@ -149,22 +137,12 @@ class EWC(BaseMethod):
 
         return loss
 
-    def process_inc(
-        self, features: torch.FloatTensor, y: torch.FloatTensor, t: torch.FloatTensor
-    ) -> torch.FloatTensor:
-        pred = self.model(x, t)
-        loss = self.loss(pred, y)
-
-        return loss
-
     def observe(
-        self, x: torch.FloatTensor, y: torch.FloatTensor, t: torch.FloatTensor
-    ) -> torch.FloatTensor:
+        self, x: torch.Tensor, y: torch.Tensor, t: torch.Tensor
+    ) -> torch.Tensor:
+        outputs = self.model(x, t)
 
-        features = self.model.forward_backbone(x)
-
-        pred = self.model.forward_head(features, t)
-        inc_loss = self.loss(pred, y)
+        inc_loss = self.loss_func(outputs.logits, y)
 
         ewc_loss = self.ewc_loss(
             model=self.model, current_task_id=self._current_task_id
@@ -178,7 +156,7 @@ class EWC(BaseMethod):
     def on_task_end(self) -> None:
         self._record_state(
             model=self.model,
-            criterion=self.loss,
+            criterion=self.loss_func,
             optimizer=self.optim,
             train_loader=self.train_loader,
             current_task_id=self._current_task_id,

@@ -1,12 +1,11 @@
-from typing import Optional
-
+from typing import Optional, Tuple, Union
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
 from . import register_model
-from .mlp import LinearClassifier, DistLinear, MLP
+from .model_output import ModelOutput
 
 
 class BasicBlock(nn.Module):
@@ -94,14 +93,21 @@ class Bottleneck(nn.Module):
 
 class ResNet(nn.Module):
     def __init__(
-        self, block, num_blocks, nf, in_channel=3, zero_init_residual=False, **kwargs
+        self,
+        block: Union[BasicBlock, Bottleneck],
+        num_blocks: int,
+        nf: int,
+        num_classes: int = None,
+        in_channel: int = 3,
+        zero_init_residual: bool = False,
+        **kwargs
     ):
         super(ResNet, self).__init__()
 
         self.in_planes = nf
 
         # hardcoded for now
-        self.output_dim = nf * 8 * block.expansion
+        self.hidden_dim = nf * 8 * block.expansion
 
         self.conv1 = nn.Conv2d(
             in_channel, nf, kernel_size=3, stride=1, padding=1, bias=False
@@ -112,6 +118,9 @@ class ResNet(nn.Module):
         self.layer3 = self._make_layer(block, 4 * nf, num_blocks[2], stride=2)
         self.layer4 = self._make_layer(block, 8 * nf, num_blocks[3], stride=2)
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+
+        if num_classes is not None:
+            self.classifier = nn.Linear(self.hidden_dim, num_classes)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -140,16 +149,7 @@ class ResNet(nn.Module):
             self.in_planes = planes * block.expansion
         return nn.Sequential(*layers)
 
-    def return_hidden(self, x, layer):
-        layers = [self.layer1, self.layer2, self.layer3, self.layer4]
-        out = F.relu(self.bn1(self.conv1(x)))
-        for lyr in layers[:layer]:
-            out = lyr(out)
-        out = self.avgpool(out)
-        out = torch.flatten(out, 1)
-        return out
-
-    def forward(self, x):
+    def forward(self, x: torch.Tensor, **kwargs):
         out = F.relu(self.bn1(self.conv1(x)))
         out = self.layer1(out)
         out = self.layer2(out)
@@ -157,24 +157,40 @@ class ResNet(nn.Module):
         out = self.layer4(out)
         out = self.avgpool(out)
         out = torch.flatten(out, 1)
-        return out
+
+        logits = None
+        if hasattr(self, "classifier"):
+            logits = self.classifier(out)
+
+        return ModelOutput(
+            hidden_states=out,
+            logits=logits,
+        )
 
 
 @register_model("resnet18")
-def resnet18(nf: Optional[int] = 32, **kwargs):
-    return ResNet(BasicBlock, num_blocks=[2, 2, 2, 2], nf=nf, **kwargs)
+def resnet18(num_classes: int = None, nf: Optional[int] = 64, **kwargs):
+    return ResNet(
+        BasicBlock, num_blocks=[2, 2, 2, 2], num_classes=num_classes, nf=nf, **kwargs
+    )
 
 
 @register_model("resnet34")
-def resnet34(nf: Optional[int] = 32, **kwargs):
-    return ResNet(BasicBlock, num_blocks=[3, 4, 6, 3], nf=nf, **kwargs)
+def resnet34(num_classes: int = None, nf: Optional[int] = 64, **kwargs):
+    return ResNet(
+        BasicBlock, num_blocks=[3, 4, 6, 3], num_classes=num_classes, nf=nf, **kwargs
+    )
 
 
 @register_model("resnet50")
-def resnet50(nf: Optional[int] = 32, **kwargs):
-    return ResNet(Bottleneck, num_blocks=[3, 4, 6, 3], nf=nf, **kwargs)
+def resnet50(num_classes: int = None, nf: Optional[int] = 64, **kwargs):
+    return ResNet(
+        Bottleneck, num_blocks=[3, 4, 6, 3], num_classes=num_classes, nf=nf, **kwargs
+    )
 
 
 @register_model("resnet101")
-def resnet101(nf: Optional[int] = 32, **kwargs):
-    return ResNet(Bottleneck, num_blocks=[3, 4, 23, 3], nf=nf, **kwargs)
+def resnet101(num_classes: int = None, nf: Optional[int] = 64, **kwargs):
+    return ResNet(
+        Bottleneck, num_blocks=[3, 4, 23, 3], num_classes=num_classes, nf=nf, **kwargs
+    )

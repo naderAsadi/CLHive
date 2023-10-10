@@ -1,13 +1,13 @@
-from typing import Any, List, Optional, Tuple, Union
+from typing import List, Optional, Union
 import numpy as np
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 
 from . import register_method
 from .er import ER
 from ..data import ReplayBuffer
-from ..loggers import BaseLogger
-from ..models import ContinualModel
+from ..utils import Logger
 
 
 def store_grad(params, grads, grad_dims):
@@ -58,25 +58,13 @@ def project(gxy: torch.Tensor, ger: torch.Tensor) -> torch.Tensor:
 class AGEM(ER):
     def __init__(
         self,
-        model: Union[ContinualModel, torch.nn.Module],
+        model: nn.Module,
         optim: torch.optim,
         buffer: ReplayBuffer,
-        logger: Optional[BaseLogger] = None,
-        n_replay_samples: Optional[int] = None,
+        n_replay_samples: int,
+        logger: Logger = None,
         **kwargs,
     ) -> "AGEM":
-        """_summary_
-
-        Args:
-            model (Union[ContinualModel, torch.nn.Module]): _description_
-            optim (torch.optim): _description_
-            buffer (ReplayBuffer): _description_
-            logger (Optional[BaseLogger], optional): _description_. Defaults to None.
-            n_replay_samples (Optional[int], optional): _description_. Defaults to None.
-
-        Returns:
-            AGEM: _description_
-        """
         super().__init__(
             model=model,
             optim=optim,
@@ -101,8 +89,8 @@ class AGEM(ER):
         overwrite_grad(self.model.parameters, projected_grad, self.grad_dims)
 
     def process_re(
-        self, x: torch.FloatTensor, y: torch.FloatTensor, t: torch.FloatTensor
-    ) -> torch.FloatTensor:
+        self, x: torch.Tensor, y: torch.Tensor, t: torch.Tensor
+    ) -> torch.Tensor:
         # store grad
         store_grad(self.model.parameters, self.grad_inc, self.grad_dims)
 
@@ -110,8 +98,8 @@ class AGEM(ER):
         self.model.zero_grad()
 
         # rehearsal grad
-        pred = self.model(x, t)
-        re_loss = self.loss(pred, y)
+        outputs = self.model(x=x, t=t)
+        re_loss = self.loss(outputs.logits, y)
         re_loss.backward()
         store_grad(self.model.parameters, self.grad_re, self.grad_dims)
 
@@ -127,10 +115,9 @@ class AGEM(ER):
         return re_loss
 
     def observe(
-        self, x: torch.FloatTensor, y: torch.FloatTensor, t: torch.FloatTensor
-    ) -> torch.FloatTensor:
-
-        self.optim.zero_grad()
+        self, x: torch.Tensor, y: torch.Tensor, t: torch.Tensor
+    ) -> torch.Tensor:
+        self.optimizer.zero_grad()
 
         # --- training --- #
         inc_loss = self.process_inc(x=x, y=y, t=t)
@@ -138,7 +125,6 @@ class AGEM(ER):
 
         re_loss, re_data = 0.0, None
         if len(self.buffer) > 0:
-
             # -- rehearsal starts ASAP. No task id is used
             if self._current_task_id > 0:
                 re_data = self.buffer.sample(n_samples=self.n_replay_samples)
@@ -146,7 +132,7 @@ class AGEM(ER):
                     x=re_data["x"], y=re_data["y"], t=re_data["t"]
                 )
 
-        self.optim.step()
+        self.optimizer.step()
 
         # --- buffer overhead --- #
         self.buffer.add(batch={"x": x, "y": y, "t": t})

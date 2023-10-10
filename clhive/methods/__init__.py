@@ -4,9 +4,6 @@ from typing import Any, Optional, Union
 import torch
 
 from .base import BaseMethod
-from ..data import ReplayBuffer
-from ..loggers import BaseLogger
-from ..models import ContinualModel
 from ..utils.registry_utils import import_all_modules
 
 
@@ -52,26 +49,6 @@ def register_method(name, bypass_checks=False):
         return cls
 
     return register_method_cls
-
-
-def auto_method(
-    name: str,
-    model: Union[ContinualModel, torch.nn.Module],
-    optim: torch.optim,
-    logger: Optional[BaseLogger] = None,
-    buffer: Optional[ReplayBuffer] = None,
-    n_replay_samples: Optional[int] = None,
-    **kwargs,
-):
-    assert name in METHOD_REGISTRY, "unknown method"
-    return METHOD_REGISTRY[name](
-        model=model,
-        optim=optim,
-        logger=logger,
-        buffer=buffer,
-        n_replay_samples=n_replay_samples,
-        **kwargs,
-    )
 
 
 # automatically import any Python files in the methods/ directory

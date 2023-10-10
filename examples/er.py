@@ -1,49 +1,32 @@
 import torch
-from torch.optim import SGD, AdamW
+from clhive.data.datasets import CIFAR100Dataset
+from clhive.data.scenarios import ClassIncrementalLoader
+from clhive.data import DataConfig, ReplayBuffer
+from clhive.models import resnet18
+from clhive.methods import ER
+from clhive.utils import Logger
 
-from clhive.data import SplitCIFAR100
-from clhive.utils.evaluators import ContinualEvaluator, ProbeEvaluator
-from clhive.scenarios import ClassIncremental, TaskIncremental
-from clhive.models import ContinualModel
-from clhive.methods import auto_method
-from clhive import Trainer, ReplayBuffer
+logger = Logger()
 
-
-# HParams
-batch_size = 32
-n_tasks = 5
-buffer_capacity = 50 * 10
-
-# Train dataset and scenario
-dataset = SplitCIFAR100(root="../cl-datasets/")
-scenario = ClassIncremental(
-    dataset=dataset, n_tasks=n_tasks, batch_size=batch_size, n_workers=6
+data_config = DataConfig(
+    dataset="cifar100", root="./files/", num_classes=100, image_size=32, num_workers=0
+)
+train_dataset = CIFAR100Dataset.from_config(data_config, split="train")
+train_scenario = ClassIncrementalLoader(
+    train_dataset, n_tasks=20, batch_size=64, n_workers=data_config.num_workers
 )
 
-print(f"Number of tasks: {scenario.n_tasks} | Number of classes: {scenario.n_classes}")
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+buffer = ReplayBuffer(capacity=1000)
 
-# Model
-model = ContinualModel.auto_model("resnet18", scenario).to(device)
-
-# Replay buffer and ER agent
-buffer = ReplayBuffer(capacity=buffer_capacity, device=device)
-agent = auto_method(
-    name="er_ace",
+model = resnet18(num_classes=data_config.num_classes)
+agent = ER(
     model=model,
-    optim=SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=1e-4),
+    optimizer=torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9),
     buffer=buffer,
+    n_replay_samples=32,
 )
 
-# Evaluator
-test_dataset = SplitCIFAR100(root="../cl-datasets/", train=False)
-test_scenario = ClassIncremental(
-    test_dataset, n_tasks=n_tasks, batch_size=batch_size, n_workers=6
-)
-evaluator = ContinualEvaluator(method=agent, eval_scenario=test_scenario, device=device)
-
-# Trainer
-trainer = Trainer(
-    method=agent, scenario=scenario, evaluator=evaluator, n_epochs=5, device=device
-)
-trainer.fit()
+for train_loader in train_scenario:
+    for pixel_values, labels, task_ids in logger.progress_bar(train_loader):
+        loss = agent.observe(pixel_values, labels, task_ids)
+        logger.log_items({"train/loss": loss.item()})

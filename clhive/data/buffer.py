@@ -8,40 +8,22 @@ import torch.nn.functional as F
 from collections import OrderedDict
 from collections.abc import Iterable
 
-from ..scenarios import ClassIncremental, TaskIncremental
 from ..utils.generic import *
 
 
 class ReplayBuffer(nn.Module):
-    """_summary_
-
-    Args:
-        nn (_type_): _description_
-    """
-
     def __init__(
         self,
         capacity: int,
-        device: Optional[torch.device] = None,
-    ) -> "ReplayBuffer":
-        """_summary_
-
-        Args:
-            capacity (int): _description_
-            device (Optional[torch.device], optional): _description_. Defaults to None.
-
-        Returns:
-            ReplayBuffer: _description_
-        """
-
-        super(ReplayBuffer, self).__init__()
+        device: torch.device = None,
+    ) -> None:
+        super().__init__()
 
         self.registered_buffers = []
 
         self.capacity = capacity
         self.current_index = 0
         self.n_seen_so_far = 0
-
         if device is None:
             device = torch.device("cpu")
         self.device = device
@@ -87,7 +69,6 @@ class ReplayBuffer(nn.Module):
 
         for name, tensor in batch.items():
             if name not in self.registered_buffers:
-
                 if not type(tensor) == torch.Tensor:
                     tensor = torch.from_numpy(np.array([tensor]))
 

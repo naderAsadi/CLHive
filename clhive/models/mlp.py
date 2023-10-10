@@ -2,8 +2,6 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 
-from . import register_model
-
 
 def normalize(x):
     x_norm = torch.norm(x, p=2, dim=1).unsqueeze(1).expand_as(x)
@@ -22,12 +20,11 @@ def add_linear(input_size: int, output_size: int, batch_norm: bool, relu: bool):
     return nn.Sequential(*layers)
 
 
-@register_model("linear")
 class LinearClassifier(nn.Module):
     """Linear classifier"""
 
-    def __init__(self, input_size, output_size, **kwargs):
-        super(LinearClassifier, self).__init__()
+    def __init__(self, input_size: int, output_size: int, **kwargs):
+        super().__init__()
         self.fc = nn.Linear(input_size, output_size)
         self.output_size = output_size
 
@@ -35,10 +32,9 @@ class LinearClassifier(nn.Module):
         return self.fc(x)
 
 
-@register_model("distlinear")
 class DistLinear(nn.Module):
-    def __init__(self, input_size, output_size, weight=None, **kwargs):
-        super(DistLinear, self).__init__(input_size, output_size)
+    def __init__(self, input_size: int, output_size: int, weight=None, **kwargs):
+        super().__init__()
         self.L = nn.Linear(input_size, output_size, bias=False)
         if weight is not None:
             self.L.weight.data = Variable(weight)
@@ -64,7 +60,6 @@ class DistLinear(nn.Module):
         return scores
 
 
-@register_model("mlp")
 class MLP(nn.Module):
     def __init__(
         self,
@@ -75,17 +70,7 @@ class MLP(nn.Module):
         batch_norm: bool = False,
         **kwargs
     ) -> None:
-        """[summary]
-
-        Args:
-            input_size (int): [description]
-            hidden_dim (int): [description]
-            output_size (int): [description]
-            num_layers (int, optional): [description]. Defaults to 2.
-            batch_norm (bool, optional): [description]. Defaults to False.
-        """
-
-        super(MLP, self).__init__(input_size, output_size)
+        super().__init__()
         self.layers = self._make_layers(
             input_size, hidden_dim, output_size, num_layers, batch_norm
         )

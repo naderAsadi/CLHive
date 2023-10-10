@@ -12,16 +12,8 @@ def get_optimizer(config: Dict[str, Any]):
     return optim
 
 
-def spinner_animation(message: str, spinner_type: Optional[str] = "dots"):
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            console = Console()
-            with console.status(message, spinner=spinner_type):
-                return func(*args, **kwargs)
-
-        return wrapper
-
-    return decorator
+def get_scheduler(config):
+    pass
 
 
 # Taken from AML codebase
@@ -57,7 +49,7 @@ def load_best_args(
         arg_values = [arg_values]
 
     print("overwriting args")
-    for (k, v) in zip(arg_list, arg_values):
+    for k, v in zip(arg_list, arg_values):
         print(f"{k} from {getattr(args, k)} to {v}")
         setattr(args, k, v)
 

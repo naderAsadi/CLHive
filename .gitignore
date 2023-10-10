@@ -1,8 +1,7 @@
-.vscode/
-.idea/
+**/.vscode/
+**/.idea/
 **/__pycache__
+*.pyc
 outputs/
 wandb/
-*.pyc
-
-main.py
+files/

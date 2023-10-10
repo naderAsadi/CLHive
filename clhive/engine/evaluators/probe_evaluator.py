@@ -46,7 +46,6 @@ class ProbeEvaluator(BaseEvaluator):
         self.linear_heads = {}
 
     def _train_linear_heads(self, task_id: int) -> None:
-
         if type(self.train_scenario) is TaskIncremental:
             probe_n_classes = self.train_scenario.loader.sampler.cpt
             sample_all_seen_tasks = False
@@ -68,7 +67,6 @@ class ProbeEvaluator(BaseEvaluator):
         train_loader = self.train_scenario.loader
 
         for task_t in task_list:
-
             train_loader.sampler.set_task(
                 task_id=task_t,
                 sample_all_seen_tasks=type(self.train_scenario) is ClassIncremental,

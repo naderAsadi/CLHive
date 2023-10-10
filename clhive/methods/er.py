@@ -1,69 +1,56 @@
 from typing import Any, List, Optional, Tuple, Union
 import torch
+import torch.nn as nn
 
 from . import register_method, BaseMethod
 from ..data import ReplayBuffer
-from ..loggers import BaseLogger
-from ..models import ContinualModel
+from ..utils import Logger
 
 
 @register_method("er")
 class ER(BaseMethod):
     def __init__(
         self,
-        model: Union[ContinualModel, torch.nn.Module],
-        optim: torch.optim,
+        model: nn.Module,
+        optimizer: torch.optim,
         buffer: ReplayBuffer,
-        logger: Optional[BaseLogger] = None,
-        n_replay_samples: Optional[int] = None,
+        n_replay_samples: int,
+        logger: Logger = None,
         **kwargs,
     ) -> "ER":
-        """_summary_
-
-        Args:
-            model (Union[ContinualModel, torch.nn.Module]): _description_
-            optim (torch.optim): _description_
-            buffer (ReplayBuffer): _description_
-            logger (Optional[BaseLogger], optional): _description_. Defaults to None.
-            n_replay_samples (Optional[int], optional): _description_. Defaults to None.
-
-        Returns:
-            ER: _description_
-        """
-        super().__init__(model, optim, logger)
+        super().__init__(model=model, optimizer=optimizer, logger=logger)
 
         self.buffer = buffer
         self.n_replay_samples = n_replay_samples
-        self.loss = torch.nn.CrossEntropyLoss()
+        self.loss_func = nn.CrossEntropyLoss()
 
     @property
     def name(self) -> str:
         return "er"
 
     def process_inc(
-        self, x: torch.FloatTensor, y: torch.FloatTensor, t: torch.FloatTensor
-    ) -> torch.FloatTensor:
-        pred = self.model(x, t)
-        loss = self.loss(pred, y)
+        self, x: torch.Tensor, y: torch.Tensor, t: torch.Tensor
+    ) -> torch.Tensor:
+        outputs = self.model(x=x, t=t)
+        loss = self.loss_func(outputs.logits, y)
 
         return loss
 
     def process_re(
-        self, x: torch.FloatTensor, y: torch.FloatTensor, t: torch.FloatTensor
-    ) -> torch.FloatTensor:
-        pred = self.model(x, t)
-        loss = self.loss(pred, y)
+        self, x: torch.Tensor, y: torch.Tensor, t: torch.Tensor
+    ) -> torch.Tensor:
+        outputs = self.model(x=x, t=t)
+        loss = self.loss_func(outputs.logits, y)
 
         return loss
 
     def observe(
-        self, x: torch.FloatTensor, y: torch.FloatTensor, t: torch.FloatTensor
-    ) -> torch.FloatTensor:
+        self, x: torch.Tensor, y: torch.Tensor, t: torch.Tensor
+    ) -> torch.Tensor:
         inc_loss = self.process_inc(x, y, t)
 
         re_loss = 0
         if len(self.buffer) > 0:
-
             if self.n_replay_samples is None:
                 self.n_replay_samples = x.size(0)
 

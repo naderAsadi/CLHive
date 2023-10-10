@@ -1,37 +1,28 @@
-from typing import Any, List, Optional, Tuple, Union
 import copy
 import torch
+import torch.nn as nn
 
 from . import register_method, BaseMethod
-from ..loggers import BaseLogger
-from ..models import ContinualModel
+from ..utils import Logger
 
 
 @register_method("lwf")
 class LwF(BaseMethod):
     def __init__(
         self,
-        model: Union[ContinualModel, torch.nn.Module],
-        optim: torch.optim,
-        logger: Optional[BaseLogger] = None,
+        model: nn.Module,
+        optimizer: torch.optim,
+        logger: Logger = None,
+        temp: int = 2,
+        lambda_0: int = 1,
         **kwargs,
     ) -> "LwF":
-        """_summary_
+        super().__init__(model=model, optimizer=optimizer, logger=logger)
 
-        Args:
-            model (Union[ContinualModel, torch.nn.Module]): _description_
-            optim (torch.optim): _description_
-            logger (Optional[BaseLogger], optional): _description_. Defaults to None.
+        self.loss = nn.CrossEntropyLoss()
 
-        Returns:
-            LwF: _description_
-        """
-        super().__init__(model, optim, logger)
-
-        self.loss = torch.nn.CrossEntropyLoss()
-
-        self.temp = 2
-        self.lambda_0 = 1
+        self.temp = temp
+        self.lambda_0 = lambda_0
         self.prev_model = None
 
     @property
@@ -66,7 +57,7 @@ class LwF(BaseMethod):
             with torch.inference_mode():
                 predictions_old_tasks_old_model[task_id] = self.prev_model(
                     data, t=torch.full_like(current_task, fill_value=task_id)
-                )
+                ).logits
             predictions_old_tasks_new_model[task_id] = current_model.forward_head(
                 features, t=torch.full_like(current_task, fill_value=task_id)
             )
@@ -91,14 +82,15 @@ class LwF(BaseMethod):
     def observe(
         self, x: torch.FloatTensor, y: torch.FloatTensor, t: torch.FloatTensor
     ) -> torch.FloatTensor:
+        outputs = self.model(x, t)
 
-        features = self.model.forward_backbone(x)
-
-        pred = self.model.forward_head(features, t)
-        inc_loss = self.loss(pred, y)
+        inc_loss = self.loss(outputs.logits, y)
 
         lwf_loss = self.lwf_loss(
-            features=features, data=x, current_model=self.model, current_task=t
+            features=outputs.hidden_states,
+            data=x,
+            current_model=self.model,
+            current_task=t,
         )
 
         loss = inc_loss + self.lambda_0 * lwf_loss

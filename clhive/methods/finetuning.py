@@ -1,31 +1,30 @@
-from typing import Any, List, Optional, Tuple, Union
 import torch
+import torch.nn as nn
 
 from . import register_method, BaseMethod
-from ..loggers import BaseLogger
-from ..models import ContinualModel
+from ..utils import Logger
 
 
 @register_method("finetuning")
 class FineTuning(BaseMethod):
     def __init__(
         self,
-        model: Union[ContinualModel, torch.nn.Module],
-        optim: torch.optim,
-        logger: Optional[BaseLogger] = None,
+        model: nn.Module,
+        optimizer: torch.optim,
+        logger: Logger = None,
         **kwargs,
     ) -> "FineTuning":
-        super().__init__(model, optim, logger)
+        super().__init__(model=model, optimizer=optimizer, logger=logger)
 
-        self.loss = torch.nn.CrossEntropyLoss()
+        self.loss_func = nn.CrossEntropyLoss()
 
     @property
     def name(self):
         return "finetuning"
 
-    def observe(self, x: torch.FloatTensor, y: torch.FloatTensor, t: torch.FloatTensor):
-        pred = self.model(x, t)
-        loss = self.loss(pred, y)
+    def observe(self, x: torch.Tensor, y: torch.Tensor, t: torch.Tensor):
+        outputs = self.model(x, t)
+        loss = self.loss_func(outputs.logits, y)
 
         self.update(loss)
 

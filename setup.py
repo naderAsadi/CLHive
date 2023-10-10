@@ -26,7 +26,6 @@ def load_requirements(path_dir=PATH_ROOT, filename="requirements.txt"):
 
 
 if __name__ == "__main__":
-
     name = "clhive"
     version = "0.1.0"
     description = "CLHive is a PyTorch framework for Continual Learning research."
