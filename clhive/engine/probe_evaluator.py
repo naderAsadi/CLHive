@@ -25,20 +25,6 @@ class ProbeEvaluator(BaseEvaluator):
         logger: Optional[BaseLogger] = None,
         device: Optional[torch.device] = None,
     ) -> "ProbeEvaluator":
-        """_summary_
-
-        Args:
-            method (BaseMethod): _description_
-            train_scenario (Union[ClassIncremental, TaskIncremental]): _description_
-            eval_scenario (Union[ClassIncremental, TaskIncremental]): _description_
-            n_epochs (int): _description_
-            logger (Optional[BaseLogger], optional): _description_. Defaults to None.
-            device (Optional[torch.device], optional): _description_. Defaults to None.
-
-        Returns:
-            ProbeEvaluator: _description_
-        """
-
         super().__init__(method, eval_scenario, logger, device)
 
         self.train_scenario = train_scenario
@@ -97,11 +83,6 @@ class ProbeEvaluator(BaseEvaluator):
 
     @torch.no_grad()
     def _evaluate(self, task_id: int) -> List[float]:
-        """_summary_
-
-        Args:
-            task_id (int): _description_
-        """
         self.agent.eval()
         tasks_accs = np.zeros(shape=self.eval_scenario.n_tasks)
 
@@ -129,11 +110,9 @@ class ProbeEvaluator(BaseEvaluator):
         return tasks_accs
 
     def on_eval_start(self):
-        """ """
         pass
 
     def on_eval_end(self, tasks_accs: List[float], current_task_id: int) -> None:
-        """ """
         avg_obs_acc = np.mean(tasks_accs[: current_task_id + 1])
         avg_anytime_acc = np.mean(tasks_accs)
         print(
@@ -146,11 +125,6 @@ class ProbeEvaluator(BaseEvaluator):
         self.train_scenario.set_task(task_id=current_task_id + 1)
 
     def fit(self, current_task_id: int = None) -> None:
-        """_summary_
-
-        Args:
-            current_task_id (int, optional): _description_. Defaults to None.
-        """
         self.on_eval_start()
 
         self._train_linear_heads(task_id=current_task_id)
